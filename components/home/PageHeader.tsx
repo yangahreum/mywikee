@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { createDraftDocument } from "@/app/me/actions";
+import { createDraftDocument } from "@/app/actions";
 
 type Props = { totalCount: number };
 
