@@ -228,7 +228,7 @@
   </tbody>
 </table>
 <div class="callout">
-  <strong>Publish 기능과의 관계.</strong> 앞서 검토한 <code>2026-06-29-publish-feature-design.html</code>는 기능(액션·RLS·<code>/p</code> 라우트·sanitize)을 정의한다. 그 <strong>UI는 본 로드맵 S4(버튼/툴바)·S5(읽기 뷰)에서 입힌다.</strong> 즉 Publish 기능 구현과 UI 폴리시는 S4/S5에서 만난다. (Publish 기능 자체를 S4 이전에 먼저 구현할지, S4와 묶을지는 S1 완료 후 결정.)
+  <strong>Publish 기능과의 관계.</strong> 앞서 검토한 <code>2026-06-29-publish-feature-design.html</code>는 기능(액션·RLS·<code>/p</code> 라우트·sanitize)을 정의한다. 그 <strong>UI는 본 로드맵 S4(버튼/툴바)·S5(읽기 뷰)에서 입힌다.</strong> <strong>확정(2026-06-29): Publish 기능 구현 자체를 S4에 묶는다</strong> — S4에서 에디터 UI(헤더·툴바·Share/Publish 버튼)와 함께 <code>setDocumentPublished</code> 액션·RLS·<code>/p</code> 라우트 골격을 구현한다. 읽기 뷰 디자인은 S5.
 </div>
 
 <h2>9. 데이터 모델 확장 (로드맵 전체)</h2>
@@ -261,7 +261,6 @@
 <h2>12. 미해결 / 검토 필요</h2>
 <ul>
   <li><strong>서비스명/브랜드</strong>: "Digital Sanctuary"를 그대로 쓸지, wiki 자체 브랜드로 바꿀지 — S1 셸 전에 확정(placeholder로 시작 가능).</li>
-  <li><strong>Publish 기능 구현 시점</strong>: S1 직후 단독으로 먼저 구현 vs S4와 묶기 — S1 완료 후 결정.</li>
   <li><strong>BlockNote 툴바 커스터마이즈 한계</strong>: 청사진 툴바를 BlockNote 포맷 명령에 어디까지 바인딩 가능한지 — S4 상세 스펙에서 검증(한계 시 BlockNote 기본 툴바 스타일링으로 폴백).</li>
   <li><strong>태그 저장 방식</strong>: <code>documents.tags</code> 배열 vs <code>document_tags</code> 조인 테이블 — S6 상세 스펙에서 확정.</li>
   <li><strong>Helvetica Neue</strong>는 시스템 폰트(비-맥 환경 폴백 Arial). 웹폰트 대체(Inter 등) 도입 여부는 후속 검토.</li>
