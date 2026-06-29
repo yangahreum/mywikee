@@ -9,6 +9,7 @@ import { RecentlyEditedTable } from "@/components/home/RecentlyEditedTable";
 import { Starred } from "@/components/home/rail/Starred";
 import { RecentActivity } from "@/components/home/rail/RecentActivity";
 import { QuickAccess } from "@/components/home/rail/QuickAccess";
+import { Footer } from "@/components/home/Footer";
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -38,6 +39,7 @@ export default async function HomePage() {
           <QuickAccess />
         </div>
       </div>
+      <Footer year={now.getFullYear()} />
     </AppShell>
   );
 }
