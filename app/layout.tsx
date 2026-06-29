@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import "pretendard/dist/web/static/pretendard.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "wiki — source editor",
-  description: "LLM-Wiki source 문서 편집기",
+  title: "wiki",
+  description: "개인 지식베이스 / 위키",
 };
 
 export default function RootLayout({
@@ -13,17 +13,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body
-        style={{
-          margin: 0,
-          fontFamily:
-            "Pretendard, -apple-system, BlinkMacSystemFont, sans-serif",
-          color: "#111315",
-          background: "#ffffff",
-        }}
-      >
-        {children}
-      </body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }

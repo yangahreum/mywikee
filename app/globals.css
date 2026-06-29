@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* ── Digital Sanctuary 디자인 토큰 (tokens.css → Tailwind v4 @theme) ── */
+@theme {
+  /* color */
+  --color-app: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-surface-alt: #fafbfc;
+  --color-ink: #1b2430;
+  --color-ink-2: #384150;
+  --color-ink-secondary: #5b6573;
+  --color-ink-muted: #8b94a3;
+  --color-ink-faint: #9aa2b1;
+  --color-primary: #182232;
+  --color-primary-fg: #ffffff;
+  --color-border: #ebedf1;
+  --color-border-2: #f0f1f4;
+  --color-border-strong: #e6e8ec;
+  --color-border-input: #d8dbe1;
+  --color-chip: #f1f2f5;
+  --color-chip-2: #eef0f3;
+  --color-chip-ink: #6b7280;
+  --color-accent-soft: #e9ebf6;
+  --color-accent-soft-fg: #3a4a78;
+  --color-star: #c9a23a;
+
+  /* font */
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* radius */
+  --radius-sm: 6px;
+  --radius-md: 9px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+
+  /* shadow */
+  --shadow-card: 0 4px 16px rgba(20, 30, 48, 0.05);
+}
+
+/* base */
+html,
+body {
+  margin: 0;
+  background: var(--color-app);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
