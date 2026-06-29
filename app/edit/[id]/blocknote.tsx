@@ -29,6 +29,7 @@ export function BlockNoteEditor({ initialContent, onChange }: Props) {
   return (
     <BlockNoteView
       editor={editor}
+      theme="light"
       onChange={() => onChange(editor.document as unknown as Blocks)}
     />
   );
