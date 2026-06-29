@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S3 — 지식 트리 (사이드바 Knowledge Tree) 설계</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root {
+    --text:#111315; --text-muted:#5a6066; --text-faint:#9098a0;
+    --surface:#fff; --surface-subtle:#f6f7f8; --border:#e3e6ea; --border-strong:#c9ced4;
+    --accent:#1f5d4f; --accent-soft:#e6efeb; --warn:#8a5a00; --warn-soft:#fbf3e2;
+    --radius-sm:4px; --radius-md:8px;
+    --font-sans:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+    --measure:82ch;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--surface);color:var(--text);font-family:var(--font-sans);font-size:17px;line-height:1.78;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  main{max-width:var(--measure);margin:0 auto;padding:72px 28px 160px}
+  h1,h2,h3{font-weight:700;letter-spacing:-0.01em;color:var(--text);line-height:1.3}
+  h1{font-size:34px;margin:0 0 6px}
+  h2{font-size:24px;margin:52px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  h3{font-size:18px;margin:28px 0 8px}
+  p,li{color:var(--text)}
+  a{color:var(--accent)}
+  .meta{color:var(--text-faint);font-size:14px;margin:0 0 8px;font-family:var(--font-mono)}
+  .lede{color:var(--text-muted);font-size:18px;margin:14px 0 8px}
+  code{font-family:var(--font-mono);font-size:.86em;background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1px 5px}
+  pre{background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;overflow-x:auto;line-height:1.55}
+  pre code{background:none;border:none;padding:0;font-size:14px}
+  table{border-collapse:collapse;width:100%;margin:18px 0;font-size:15px}
+  th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+  th{background:var(--surface-subtle);font-weight:600}
+  .callout{margin:20px 0;padding:14px 18px;background:var(--accent-soft);border:1px solid #cfe0d9;border-radius:var(--radius-md)}
+  .callout.warn{background:var(--warn-soft);border-color:#ecd9ad}
+  .callout strong{color:var(--accent)}
+  .callout.warn strong{color:var(--warn)}
+  .tag{display:inline-block;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);background:var(--surface-subtle);border:1px solid var(--border);border-radius:999px;padding:2px 10px;margin:0 6px 6px 0}
+  hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+  .ascii{font-family:var(--font-mono);font-size:12.5px;line-height:1.5;white-space:pre;background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+
+<p class="meta">created: 2026-06-29 · project: wiki · type: design · slice: S3 (knowledge tree)</p>
+<h1>S3 — 지식 트리 (사이드바 Knowledge Tree)</h1>
+<p class="lede">사이드바 왼쪽 메뉴의 <code>KNOWLEDGE TREE</code> 영역에 폴더 계층 트리를 구현한다(청사진 Frame 1). 폴더와 문서를 <strong>최대 4단</strong> 깊이로 계층화하고, 항목을 <strong>클릭해 열고</strong>(폴더 토글 / 문서 에디터 이동) <strong>드래그앤드롭으로 재배치</strong>한다.</p>
+
+<p>
+  <span class="tag">folders 신규 테이블</span><span class="tag">4단 깊이</span><span class="tag">클릭 열기 + DnD</span><span class="tag">Supabase RLS</span><span class="tag">vitest</span>
+</p>
+
+<h2>1. 배경 &amp; 범위</h2>
+<p>
+  현재 <code>documents</code>는 평면(<code>project</code> 텍스트 필드뿐)이다. S3는 <strong>폴더 계층</strong>을 도입해 사이드바 Knowledge Tree(현 placeholder)를 실데이터로 채운다.
+</p>
+<div class="callout">
+  <strong>범위 (S3).</strong> ① <code>folders</code> 테이블 + <code>documents.folder_id</code> 데이터 모델, ② 트리 조회/빌드, ③ 사이드바 트리 UI(청사진 Frame 1 픽셀, 펼침/접힘), ④ <strong>폴더 생성</strong>(<code>plus-square</code>), ⑤ <strong>클릭 열기</strong>(폴더 토글 / 문서→<code>/edit</code>), ⑥ <strong>드래그앤드롭 재배치</strong>(문서·폴더를 다른 폴더로, 4단 제약 검증), ⑦ <strong>사이드바 통일</strong>(아래 §5.0).
+</div>
+<h3>1.1 사이드바 통일 (결정 2026-06-29)</h3>
+<p>
+  청사진은 사이드바가 화면마다 달랐다 — 홈(Frame 1)은 <code>Home·Recent + KNOWLEDGE TREE</code>, 에디터/아티클(Frame 2/3)은 flat 네비(<code>Knowledge Base·Recent Notes·Favorites·Folders·Archive</code>). <strong>사용자 결정: 왼쪽 사이드바는 모든 화면 공통으로 트리를 고정한다.</strong> 따라서 <strong>청사진 Frame 1 사이드바(Home·Recent + KNOWLEDGE TREE)를 공통 사이드바로 채택</strong>하고, Frame 2/3의 flat 네비는 쓰지 않는다. (아티클의 "오른편 네비게이션" = TOC/Related는 읽기뷰 <strong>S5</strong> 소관.)
+</p>
+<ul>
+  <li>S1에서 만든 <code>NAV_ITEMS</code>(Home/Recent/Knowledge Base/Favorites/Folders/Archive 6개)를 <strong>Home·Recent 2개로 축소</strong>하고, 그 아래에 KNOWLEDGE TREE를 둔다. Knowledge Base/Favorites/Folders/Archive 네비 항목은 트리로 대체(해당 화면은 후속).</li>
+  <li><code>nav.ts</code>의 <code>NAV_ITEMS</code>와 그 테스트를 이 결정에 맞춰 갱신(요구사항 변경에 따른 스펙 동기화 — 신규 기능 충돌이 아니라 의도된 변경).</li>
+  <li>사이드바 너비는 공통 <strong>228px</strong>(현재 에디터 212px도 228px로 통일). 트리가 들어가므로 홈 기준 폭 사용.</li>
+</ul>
+<div class="callout warn">
+  <strong>비범위 (후속).</strong> 폴더 <strong>이름변경·삭제</strong>(S3 확장), <strong>Favorites/Archive/Recent 화면</strong>(별도 슬라이스 — 네비 항목은 이미 있으나 화면은 후속), 폴더별 문서 목록 <strong>전용 페이지</strong>(트리에서 펼치는 것으로 갈음), 다중 선택·키보드 DnD. <code>documents.project</code> 필드는 당분간 유지(폴더와 병존, 추후 정리).
+</div>
+
+<h2>2. 데이터 모델</h2>
+<h3>2.1 <code>folders</code> 테이블 (신규)</h3>
+<pre><code>CREATE TABLE IF NOT EXISTS public.folders (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id   uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  parent_id  uuid REFERENCES public.folders(id) ON DELETE CASCADE,  -- NULL = 루트
+  name       text NOT NULL DEFAULT '새 폴더',
+  depth      int  NOT NULL DEFAULT 1 CHECK (depth BETWEEN 1 AND 4), -- 1=루트 … 4=최대
+  position   int  NOT NULL DEFAULT 0,                                -- 같은 parent 내 정렬
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+-- updated_at 트리거: 기존 set_updated_at() 재사용
+CREATE INDEX IF NOT EXISTS idx_folders_owner_parent ON public.folders (owner_id, parent_id, position);</code></pre>
+<ul>
+  <li><strong>depth</strong>를 컬럼으로 캐시해 4단 제약을 DB(CHECK)와 앱 양쪽에서 강제. 루트 폴더 depth=1.</li>
+  <li><code>ON DELETE CASCADE</code>: 부모 폴더 삭제 시 하위 폴더 연쇄 삭제(삭제는 후속이나 FK는 지금 설정).</li>
+</ul>
+<h3>2.2 <code>documents</code> 변경</h3>
+<pre><code>ALTER TABLE public.documents
+  ADD COLUMN IF NOT EXISTS folder_id uuid REFERENCES public.folders(id) ON DELETE SET NULL;
+-- 문서는 폴더 안(folder_id) 또는 루트(NULL). 폴더 삭제 시 문서는 루트로(SET NULL).
+CREATE INDEX IF NOT EXISTS idx_documents_owner_folder ON public.documents (owner_id, folder_id);</code></pre>
+<h3>2.3 RLS</h3>
+<pre><code>ALTER TABLE public.folders ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "owners full access on own folders" ON public.folders;
+CREATE POLICY "owners full access on own folders"
+  ON public.folders FOR ALL
+  USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);</code></pre>
+<ul>
+  <li>마이그레이션: <code>supabase/migrations/0003_folders.sql</code> (또는 publish가 0003이면 다음 번호). youllog 수동 적용: <code>docs/setup/folders.sql</code>(재실행 안전).</li>
+</ul>
+
+<h2>3. 4단 깊이 제약</h2>
+<ul>
+  <li><strong>폴더 생성</strong>: 부모 depth + 1 ≤ 4. 부모가 depth 4면 하위 폴더 생성 불가(UI에서 <code>plus-square</code> 비활성/토스트).</li>
+  <li><strong>폴더 이동</strong>(DnD): 이동 후 <em>서브트리 전체</em>의 최대 depth ≤ 4 여야 한다. 즉 (대상 부모 depth) + (이동 폴더의 서브트리 높이) ≤ 4. 위반 시 드롭 거부(시각 피드백). 이동 시 서브트리 depth 일괄 갱신.</li>
+  <li><strong>문서</strong>는 depth를 차지하지 않음(폴더 안의 잎). 문서는 depth 4 폴더에도 들어갈 수 있다.</li>
+  <li><strong>순환 방지</strong>: 폴더를 자기 자신 또는 자기 자손으로 이동 금지(서버 검증).</li>
+  <li>depth 계산·검증은 순수 함수로 분리(<code>lib/tree/depth.ts</code>) → TDD.</li>
+</ul>
+
+<h2>4. 트리 조회 &amp; 빌드</h2>
+<ul>
+  <li><code>lib/tree/get-tree.ts</code>: owner의 <code>folders</code> 전체 + <code>documents</code>(id,title,folder_id) 조회 → 메모리에서 계층 트리 빌드.</li>
+  <li>빌드 순수 함수 <code>buildTree(folders, docs)</code> → <code>TreeNode[]</code>(폴더 노드는 children + 문서, position 정렬) — TDD.</li>
+  <li>타입: <code>TreeFolder{id,name,parentId,depth,position}</code>, <code>TreeDoc{id,title,folderId}</code>, <code>TreeNode = {kind:'folder', ...children} | {kind:'doc', ...}</code>.</li>
+</ul>
+
+<h2>5. 사이드바 트리 UI (청사진 Frame 1 픽셀)</h2>
+<div class="ascii">KNOWLEDGE TREE            [+]   ← 라벨 10.5/600/.09em faint + plus-square(14)
+▾ 📁 Projects                   ← chevron-down(15)+folder(15)+이름, h32, 펼침
+   📄 Systems Architecture      ← 들여쓰기, file-text(14)+제목, h31, 활성 bg #f1f2f5
+   📄 Neural Plasticity
+   ▸ 📁 Sub Folder              ← 2단 폴더(chevron-right=접힘)
+▸ 📁 Ideas                      ← chevron-right(15)+folder(15), h32, 접힘
+▸ 📁 Resources</div>
+<ul>
+  <li>라벨 "KNOWLEDGE TREE": 10.5/600/<code>.09em</code>/<code>text-ink-faint</code> + 우측 <code>plus-square</code>(14) = <strong>루트 폴더 생성</strong> 버튼.</li>
+  <li>폴더 행(h32, <code>text-[13px]</code>): <code>chevron-down</code>/<code>chevron-right</code>(15) + <code>folder</code>(15) + 이름. 펼침 폴더 이름 <code>text-ink</code>/500, 접힘 <code>text-ink-secondary</code>.</li>
+  <li>문서 행(h31): <code>file-text</code>(14) + 제목. 들여쓰기 = depth × 일정 px(청사진 루트 문서 <code>padding-left 34</code> 기준, 단 트리는 depth별 increment). 활성(현재 편집 중 문서) <code>bg-chip</code> + <code>text-ink</code>/500.</li>
+  <li>gap 1px. 행 hover <code>bg-chip</code>(인터랙션).</li>
+  <li>들여쓰기: depth별 좌측 패딩 increment(예: 폴더 depth d → <code>padding-left</code> = 12 + (d-1)×16). 문서는 부모 폴더 + 한 단 더.</li>
+</ul>
+
+<h2>6. 인터랙션</h2>
+<h3>6.1 클릭 열기</h3>
+<ul>
+  <li><strong>폴더 클릭</strong>: 펼침/접힘 토글(<code>expanded</code> 클라이언트 상태). chevron 회전/교체.</li>
+  <li><strong>문서 클릭</strong>: <code>/edit/{id}</code>로 이동(Link).</li>
+  <li>접힘/펼침 상태는 클라이언트 상태(로컬). 영속화는 후속(localStorage 등).</li>
+</ul>
+<h3>6.2 드래그앤드롭 재배치</h3>
+<ul>
+  <li>라이브러리: <strong><code>@dnd-kit/core</code></strong>(+ <code>@dnd-kit/sortable</code> 필요 시) — React 19 호환, 경량, 접근성. (대안 <code>react-arborist</code>는 트리 특화지만 무겁고 커스텀 제약 → dnd-kit + 자체 트리 권장. <em>구현 계획에서 최종 확정.</em>)</li>
+  <li><strong>드래그 대상</strong>: 폴더, 문서. <strong>드롭 대상</strong>: 폴더(그 안으로), 루트 영역.</li>
+  <li>드롭 시 서버 액션 <code>moveItem</code> 호출 → 낙관적 UI 갱신 + 실패 시 롤백.</li>
+  <li>드롭 가능 여부 시각화: 유효(하이라이트) / 무효(4단 초과·순환 → 비활성 표시).</li>
+</ul>
+
+<h2>7. 서버 액션</h2>
+<p>파일: <code>app/tree/actions.ts</code> (또는 <code>lib/tree/actions.ts</code>, 구현 계획서에서 확정). 모두 <code>getUser</code> 가드 + owner 이중조건 + zod.</p>
+<ul>
+  <li><code>createFolder(parentId: uuid|null, name?)</code>: 부모 depth+1 ≤ 4 검증 → insert(depth, position=말미). 반환 새 폴더.</li>
+  <li><code>moveItem({kind:'folder'|'doc', id, targetParentId: uuid|null})</code>:
+    <ul>
+      <li>doc: <code>documents.folder_id = targetParentId</code> 업데이트.</li>
+      <li>folder: 순환 검사 + (target depth + 서브트리 높이) ≤ 4 검증 → <code>parent_id</code> 변경 + 서브트리 <code>depth</code> 일괄 재계산.</li>
+    </ul>
+  </li>
+  <li>오류: <code>unauthorized</code>/<code>validation</code>/<code>depth_exceeded</code>/<code>cycle</code>/<code>not_found</code>/<code>db_error</code>. <code>revalidatePath("/")</code> 등.</li>
+</ul>
+
+<h2>8. 파일 변경 요약</h2>
+<table>
+  <thead><tr><th>파일</th><th>변경</th></tr></thead>
+  <tbody>
+    <tr><td><code>supabase/migrations/000N_folders.sql</code> · <code>docs/setup/folders.sql</code></td><td>신규: folders + documents.folder_id + RLS + 인덱스</td></tr>
+    <tr><td><code>lib/tree/types.ts</code></td><td>신규: TreeFolder/TreeDoc/TreeNode</td></tr>
+    <tr><td><code>lib/tree/depth.ts</code> (+__tests__)</td><td>신규: depth 계산·4단 검증·순환 검사 순수 함수</td></tr>
+    <tr><td><code>lib/tree/build-tree.ts</code> (+__tests__)</td><td>신규: folders+docs → TreeNode[] 빌드(순수)</td></tr>
+    <tr><td><code>lib/tree/get-tree.ts</code></td><td>신규: 서버 조회 → buildTree</td></tr>
+    <tr><td><code>app/actions.ts</code> 또는 <code>app/tree/actions.ts</code></td><td>신규: createFolder, moveItem</td></tr>
+    <tr><td><code>components/shell/tree/KnowledgeTree.tsx</code></td><td>신규: 트리 루트(라벨+plus-square+DnD context)</td></tr>
+    <tr><td><code>components/shell/tree/TreeNodeRow.tsx</code></td><td>신규: 폴더/문서 행(재귀, 들여쓰기, draggable/droppable)</td></tr>
+    <tr><td><code>lib/shell/nav.ts</code> (+__tests__)</td><td>수정: <code>NAV_ITEMS</code> 6개 → Home·Recent 2개 (§1.1). 테스트 동기화</td></tr>
+    <tr><td><code>components/shell/Sidebar.tsx</code></td><td>수정: flat 네비 축소 + KNOWLEDGE TREE 영역에 <code>&lt;KnowledgeTree&gt;</code> 주입</td></tr>
+    <tr><td><code>components/shell/AppShell.tsx</code></td><td>수정: <code>tree</code> prop 추가 → Sidebar에 전달. 너비 228 통일</td></tr>
+    <tr><td><code>app/page.tsx</code> · <code>app/edit/[id]/page.tsx</code></td><td>수정: 각 페이지(서버)가 <code>getTree(user.id)</code> 조회 → AppShell에 <code>tree</code> 전달. edit 사이드바 212→228</td></tr>
+    <tr><td><code>package.json</code></td><td>추가: <code>@dnd-kit/core</code>(+sortable)</td></tr>
+  </tbody>
+</table>
+<div class="callout warn">
+  <strong>AppShell 트리 데이터 전달.</strong> 현재 <code>AppShell</code>은 <code>email</code>만 받는다. 트리는 사이드바에 필요하므로 <code>AppShell</code>에 <code>tree</code> prop을 추가하고 각 페이지(서버)가 <code>getTree(user.id)</code>로 조회해 전달한다. (트리가 없는 화면도 사이드바를 쓰므로 모든 셸 사용 페이지가 트리를 조회 — 비용은 owner 단위 가벼운 쿼리.)
+</div>
+
+<h2>9. 테스트</h2>
+<ul>
+  <li><strong>vitest 단위</strong>:
+    <ul>
+      <li><code>depth</code>: 부모 depth+1 검증(4 경계), 서브트리 높이 계산, 순환 검사(자기/자손 이동 거부).</li>
+      <li><code>build-tree</code>: 평면 folders+docs → 계층(정렬·문서 배치·루트 처리), 빈 입력.</li>
+      <li><code>KnowledgeTree</code>/<code>TreeNodeRow</code>: 폴더/문서 렌더, 펼침/접힘, 들여쓰기 depth, plus-square(루트 depth4 자식 없음 — 여기선 루트라 항상 가능), 활성 문서 표시.</li>
+      <li>(DnD 동작은 단위로 부분만 — 드롭 유효성 판정 순수 함수 위주. 실제 드래그는 QA/수동.)</li>
+    </ul>
+  </li>
+  <li><strong>회귀</strong>: 기존 + S1/S2 동반 통과. Sidebar 변경이 기존 Sidebar 테스트를 깨지 않게(트리 prop은 옵셔널/기본 빈 배열).</li>
+  <li><strong>런타임/QA</strong>: 폴더 생성 → 트리 표시 → 문서 드래그로 폴더 이동 → 새로고침 유지; 4단 초과 드롭 거부; 순환 이동 거부. 실제 Supabase.</li>
+</ul>
+
+<h2>10. 미해결 / 검토</h2>
+<ul>
+  <li><strong>DnD 라이브러리</strong>: <code>@dnd-kit/core</code>(권장) vs <code>react-arborist</code> — 구현 계획에서 확정(번들·React19 호환·커스텀 자유도).</li>
+  <li><strong>AppShell tree prop</strong> 추가가 모든 셸 페이지에 트리 조회를 요구 — 공통 레이아웃(route group)으로 한 번만 조회하도록 리팩토링할지(후속) vs 페이지별 조회(지금).</li>
+  <li><code>documents.project</code> ↔ <code>folder_id</code> 병존: S2 태그칩/브레드크럼이 아직 project 사용. 폴더 도입 후 정리 시점은 후속.</li>
+  <li>펼침 상태 영속화(localStorage), 폴더 빈 상태("폴더 없음 — + 로 생성") 처리.</li>
+  <li>문서 생성 시 현재 폴더 컨텍스트에 넣을지(New Entry가 선택 폴더에) — 기본 루트, 후속 개선.</li>
+</ul>
+
+<hr />
+<p class="meta">end of S3 design. 다음: S3 구현 계획서 → 팀 구현. 청사진 Frame 1 트리 픽셀 충실 + 4단 + DnD.</p>
+</main>
+</body>
+</html>
