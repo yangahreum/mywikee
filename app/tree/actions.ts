@@ -22,8 +22,14 @@ export async function createFolder(parentId: string | null, name?: string) {
   if (!parsed.success) return { ok: false as const, error: "validation" };
 
   const folders = await loadFolders(supabase, user.id);
+  // 존재검증: parentId가 null이 아닌데 본인 folders에 없으면 not_found (임의/타인 uuid 방어).
+  let parent: FolderRow | undefined;
+  if (parentId !== null) {
+    parent = folders.find((f) => f.id === parentId);
+    if (!parent) return { ok: false as const, error: "not_found" };
+  }
   if (!canCreateChildFolder(parentId, folders)) return { ok: false as const, error: "depth_exceeded" };
-  const depth = parentId ? (folders.find((f) => f.id === parentId)!.depth + 1) : 1;
+  const depth = parent ? parent.depth + 1 : 1;
 
   const { error } = await supabase.from("folders").insert({
     owner_id: user.id, parent_id: parentId, name: name ?? "새 폴더", depth,
@@ -53,10 +59,19 @@ export async function moveItem(input: z.infer<typeof MoveInput>) {
     if (error) return { ok: false as const, error: "db_error" };
   } else {
     const folders = await loadFolders(supabase, user.id);
+    // 존재검증: 이동 대상(id)과 목표 부모(targetParentId)가 본인 folders에 있어야 함.
+    // 임의/타인 uuid 또는 stale DnD 동시성 시 런타임 throw 대신 graceful 반환.
+    const moving = folders.find((f) => f.id === id);
+    if (!moving) return { ok: false as const, error: "not_found" };
+    let targetParent: FolderRow | undefined;
+    if (targetParentId !== null) {
+      targetParent = folders.find((f) => f.id === targetParentId);
+      if (!targetParent) return { ok: false as const, error: "not_found" };
+    }
     if (!canDropFolder(id, targetParentId, folders)) return { ok: false as const, error: "depth_exceeded_or_cycle" };
-    const newDepth = targetParentId ? (folders.find((f) => f.id === targetParentId)!.depth + 1) : 1;
+    const newDepth = targetParent ? targetParent.depth + 1 : 1;
     // 서브트리 depth 일괄 재계산
-    const delta = newDepth - folders.find((f) => f.id === id)!.depth;
+    const delta = newDepth - moving.depth;
     const ids = collectSubtree(id, folders);
     await supabase.from("folders").update({ parent_id: targetParentId, depth: newDepth }).eq("id", id).eq("owner_id", user.id);
     for (const sub of ids.filter((x) => x !== id)) {

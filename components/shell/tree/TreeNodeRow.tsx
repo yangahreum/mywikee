@@ -67,7 +67,7 @@ export function TreeNodeRow({
           {...draggable.listeners}
           onClick={() => setOpen((v) => !v)}
           style={{ paddingLeft: pad }}
-          className="flex h-8 flex-1 items-center gap-2 rounded-md pr-1 text-[13px] font-medium text-ink hover:bg-chip"
+          className={`flex h-8 flex-1 items-center gap-2 rounded-md pr-1 text-[13px] font-medium hover:bg-chip ${open ? "text-ink" : "text-ink-secondary"}`}
         >
           {open ? <ChevronDown size={15} strokeWidth={2} /> : <ChevronRight size={15} strokeWidth={2} />}
           <Folder size={15} strokeWidth={1.7} /> {node.name}
