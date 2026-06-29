@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Digital Sanctuary — UI/디자인 시스템 &amp; S1~S6 로드맵 (마스터 설계)</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root {
+    --text:#111315; --text-muted:#5a6066; --text-faint:#9098a0;
+    --surface:#fff; --surface-subtle:#f6f7f8; --border:#e3e6ea; --border-strong:#c9ced4;
+    --accent:#1f5d4f; --accent-soft:#e6efeb; --warn:#8a5a00; --warn-soft:#fbf3e2;
+    --radius-sm:4px; --radius-md:8px;
+    --font-sans:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+    --measure:80ch;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--surface);color:var(--text);font-family:var(--font-sans);font-size:17px;line-height:1.78;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  main{max-width:var(--measure);margin:0 auto;padding:72px 28px 160px}
+  h1,h2,h3{font-weight:700;letter-spacing:-0.01em;color:var(--text);line-height:1.3}
+  h1{font-size:34px;margin:0 0 6px}
+  h2{font-size:24px;margin:52px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  h3{font-size:18px;margin:28px 0 8px}
+  p,li{color:var(--text)}
+  a{color:var(--accent)}
+  .meta{color:var(--text-faint);font-size:14px;margin:0 0 8px;font-family:var(--font-mono)}
+  .lede{color:var(--text-muted);font-size:18px;margin:14px 0 8px}
+  code{font-family:var(--font-mono);font-size:.86em;background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1px 5px}
+  pre{background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;overflow-x:auto;line-height:1.55}
+  pre code{background:none;border:none;padding:0;font-size:14px}
+  table{border-collapse:collapse;width:100%;margin:18px 0;font-size:15px}
+  th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+  th{background:var(--surface-subtle);font-weight:600}
+  .callout{margin:20px 0;padding:14px 18px;background:var(--accent-soft);border:1px solid #cfe0d9;border-radius:var(--radius-md)}
+  .callout.warn{background:var(--warn-soft);border-color:#ecd9ad}
+  .callout strong{color:var(--accent)}
+  .callout.warn strong{color:var(--warn)}
+  .tag{display:inline-block;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);background:var(--surface-subtle);border:1px solid var(--border);border-radius:999px;padding:2px 10px;margin:0 6px 6px 0}
+  hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+  .ascii{font-family:var(--font-mono);font-size:13px;line-height:1.5;white-space:pre;background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;overflow-x:auto}
+  .sw{display:inline-block;width:13px;height:13px;border-radius:3px;border:1px solid rgba(0,0,0,.12);vertical-align:-2px;margin-right:6px}
+</style>
+</head>
+<body>
+<main>
+
+<p class="meta">created: 2026-06-29 · project: wiki · type: design (master) · slices: S1~S6</p>
+<h1>Digital Sanctuary — UI/디자인 시스템 &amp; 로드맵</h1>
+<p class="lede">제공된 "Digital Sanctuary" 고충실도 청사진(3화면)을 코드베이스에 정렬한 <strong>마스터 설계</strong>. 전체 비전·정보구조·디자인 시스템·데이터 모델을 정의하고, 구현을 <strong>S1~S6 슬라이스</strong>로 쪼갠다. 각 슬라이스는 진입 시점에 개별 상세 스펙을 따로 쓴다.</p>
+
+<p>
+  <span class="tag">Next.js App Router</span><span class="tag">Tailwind + CSS vars</span><span class="tag">Newsreader / JetBrains Mono</span><span class="tag">lucide-react</span><span class="tag">BlockNote</span><span class="tag">Supabase RLS</span>
+</p>
+
+<h2>1. 배경 &amp; 목표</h2>
+<p>
+  현재 위키 앱은 동작한다 — 매직링크 로그인, 사용자별 문서 소유(멀티테넌트), BlockNote 에디터, source export, Publish(별도 스펙)까지. 그러나 <strong>UI는 디자인 시스템이 없다</strong>: 컴포넌트마다 인라인 <code>style</code>, 전역 스타일·토큰·공통 셸 부재, 폰트는 Pretendard 하나. 이번 작업의 목표는 제공된 청사진을 출발점으로 <strong>전체 UI/디자인 시스템을 처음 세우고</strong>, 청사진이 그리는 위키 워크스페이스를 코어 기능 우선으로 단계 구현하는 것이다.
+</p>
+
+<h2>2. 청사진의 위상 (중요)</h2>
+<p>
+  전달된 <code>Digital Sanctuary.dc.html</code> + <code>tokens.css</code> + <code>base.css</code> + 스크린샷은 <strong>HTML로 만든 디자인 레퍼런스(고충실도 프로토타입)</strong>다. 그대로 복사해 쓰는 프로덕션 코드가 아니다.
+</p>
+<ul>
+  <li><strong>재구현 대상</strong>: 우리 환경(Next.js App Router + Tailwind + BlockNote + lucide-react)에서 이 디자인을 픽셀에 가깝게 <em>재구현</em>한다.</li>
+  <li><strong>차용</strong>: 색·타이포·간격·radius·그림자 등 디자인 토큰, 레이아웃, 컴포넌트 패턴, 아이콘 목록.</li>
+  <li><strong>재현하지 않음</strong>: 프로토타입의 가짜 브라우저 크롬(신호등 점·주소창), 캔버스 배치, "Wiki Dashboard with Tree Navigation" 같은 프레임 라벨 — 모두 전시용 장식.</li>
+  <li><strong>샘플 콘텐츠</strong>(Dr. Julian Vance, 631 pages, 4 contributors, 특정 문서 제목)는 더미. 실제 데이터로 대체.</li>
+</ul>
+
+<h2>3. 기반 — 이미 구현된 것 (신규 슬라이스 불필요)</h2>
+<p>아래는 <strong>이미 동작</strong>하므로 로드맵에 별도 슬라이스로 넣지 않는다. UI 슬라이스가 이 위에 얹힌다.</p>
+<table>
+  <thead><tr><th>기능</th><th>현재 구현</th><th>위치</th></tr></thead>
+  <tbody>
+    <tr><td>로그인 (매직링크)</td><td>Supabase <code>signInWithOtp</code> + 이메일 확인 + 로그아웃</td><td><code>app/login</code>, <code>app/auth/confirm</code>, <code>app/auth/sign-out</code></td></tr>
+    <tr><td>인증 가드</td><td><code>getUser()</code> → 없으면 <code>/login</code> 리다이렉트</td><td><code>app/me/page.tsx</code> 등</td></tr>
+    <tr><td>사용자별 글 작성·소유 (멀티테넌트)</td><td><code>documents.owner_id</code> + RLS <code>auth.uid() = owner_id</code></td><td><code>supabase/migrations/0002_documents.sql</code></td></tr>
+    <tr><td>에디터 / 자동저장</td><td>BlockNote + <code>saveDocument</code> 서버 액션</td><td><code>app/edit/[id]</code></td></tr>
+    <tr><td>HTML 변환</td><td><code>blocksToHtml(blocks)</code> (서버)</td><td><code>lib/export/html.ts</code></td></tr>
+    <tr><td>Publish (공개 발행)</td><td>별도 스펙 — status/RLS/<code>/p</code> 라우트</td><td><code>2026-06-29-publish-feature-design.html</code></td></tr>
+  </tbody>
+</table>
+<div class="callout">
+  <strong>사용자/인증 정책.</strong> "사용자별로 글을 쓰는 것"은 멀티테넌트로 이미 작동한다. 이번 로드맵이 추가하는 것은 <strong>청사진의 사용자 UI 표시</strong>(사이드바 User 블록·아바타·로그아웃, 토픽바 아바타)뿐이며 S1 셸에 포함한다. <strong>별도 사용자 관리(admin) UI는 범위 밖.</strong> 한 워크스페이스를 여러 명이 공유하는 <strong>멀티 협업</strong>(청사진의 "4 contributors", 저자 표시)은 현재 "각자 소유" 모델과 다른 개념이라 <strong>비전 백로그</strong>로 둔다.
+</div>
+
+<h2>4. 정보구조 &amp; 라우팅</h2>
+<p>청사진 3화면을 기존 라우트에 정렬한다. 라우트 재작업을 최소화한다(YAGNI).</p>
+<table>
+  <thead><tr><th>화면 (청사진)</th><th>청사진 제안 URL</th><th>채택 라우트</th><th>비고</th></tr></thead>
+  <tbody>
+    <tr><td>① 홈 대시보드 (Frame 1)</td><td><code>/</code></td><td><code>/</code> (기존 <code>/me</code> 재설계 → 흡수)</td><td>워크스페이스 홈</td></tr>
+    <tr><td>② 읽기 / 아티클 (Frame 2)</td><td><code>/p/:slug</code></td><td><code>/p/[slug]</code></td><td>Publish 스펙과 동일. 공개·내부 공용 읽기 뷰</td></tr>
+    <tr><td>③ 마크다운 에디터 (Frame 3)</td><td><code>/p/:slug/edit</code></td><td><code>/edit/[id]</code> (기존 유지)</td><td>id 기반 이미 구현. slug 편집 URL은 후속</td></tr>
+  </tbody>
+</table>
+<p>홈은 현재 <code>app/page.tsx</code>가 <code>/me</code>로 리다이렉트하는데, S2에서 <code>/</code> 자체를 대시보드로 만들고 <code>/me</code>는 <code>/</code>로 합치거나 별칭 처리한다(상세는 S2 스펙).</p>
+
+<h2>5. 앱 셸 (3화면 공통 — S1에서 구축)</h2>
+<div class="ascii">┌────────────┬─────────────────────────────────────────────┐
+│ 사이드바     │ 토픽바 (h 54): Quick find · Explorer/Graphs/ │
+│ (surface     │   Templates · 🔔 ⚙ 아바타 · [Publish]        │
+│  228 / 212) ├─────────────────────────────────────────────┤
+│ 브랜드       │                                             │
+│ [+ New ...] │      콘텐츠 (max-width 940, 중앙 정렬)         │
+│ 네비         │                                             │
+│ KNOWLEDGE    │                                             │
+│   TREE       │                                             │
+│ ─────────   │                                             │
+│ Settings     │                                             │
+│ Support      │                                             │
+│ User ▸ 메뉴  │                                             │
+└────────────┴─────────────────────────────────────────────┘
+   앱 배경: #f6f7f9 (cool light gray)</div>
+
+<h3>사이드바 (surface #fff, 우측 1px border)</h3>
+<ul>
+  <li><strong>브랜드</strong>: "Digital Sanctuary"(Newsreader 17/600) + "Personal Wiki"(11, muted). <span class="warn">실제 서비스명은 사용자 확정 전까지 placeholder.</span></li>
+  <li><strong>주 버튼</strong>: <code>+ New Entry</code> / <code>+ Create New Page</code> — full-width, h40, 배경 <code>#182232</code>, 흰 글자, radius 9.</li>
+  <li><strong>네비</strong>(아이콘+라벨, lucide): Home(<code>home</code>) · Recent(<code>history</code>) · Knowledge Base(<code>database</code>) · Favorites(<code>star</code>) · Folders(<code>folder</code>) · Archive(<code>archive</code>). 활성 항목 = 배경 <code>#f1f2f5</code> 알약 + 좌측 3px <code>#182232</code> 강조 바.</li>
+  <li><strong>KNOWLEDGE TREE</strong>(라벨 10.5/600/.09em faint + <code>plus-square</code>): 폴더 계층(<code>chevron</code> + <code>folder</code> + 문서 <code>file-text</code>), 펼침/접힘. (데이터는 S3)</li>
+  <li><strong>하단 고정</strong>: Settings(<code>settings</code>) · Support(<code>help-circle</code>) · 구분선 · <strong>User 블록</strong>(32px 아바타 + 이름 + "Scholarly Focus" 등 부제). User 블록 클릭 → 로그아웃 등 메뉴. 로그인 사용자 정보는 <code>getUser()</code>.</li>
+  <li>너비: 홈 <strong>228px</strong>, 읽기·편집 <strong>212px</strong>.</li>
+</ul>
+<h3>토픽바 (h54, surface, 하단 1px border)</h3>
+<ul>
+  <li>좌: Quick find 검색 알약(240px, <code>#f4f5f7</code>, <code>search</code> 아이콘, "Quick find…"/"Search…"). <strong>⌘K</strong>로 커맨드 팔레트(S6).</li>
+  <li>우: 네비 텍스트 Explorer(활성)/Graphs/Templates · <code>bell</code> · <code>settings</code> · 28px 아바타 · <strong>Publish</strong> 버튼(<code>#182232</code>, h34).</li>
+  <li>Graphs/Templates는 백로그 — S1~S6 동안 <strong>비활성(disabled/tooltip "곧 제공")</strong> 표시.</li>
+</ul>
+
+<h2>6. 디자인 시스템</h2>
+<h3>6.1 스타일링 방식</h3>
+<p><strong>Tailwind + CSS 변수 토큰.</strong> 제공된 <code>tokens.css</code>를 <code>:root</code>에 두고, README의 <code>tailwind.config</code> 매핑(<code>theme.extend</code>)을 그대로 채택한다. 현재 인라인 <code>style</code>은 Tailwind 유틸 + 토큰으로 이전. 현재 Pretendard는 제거하고 아래 폰트로 교체.</p>
+<h3>6.2 폰트 (Google Fonts <code>&lt;link&gt;</code> in <code>app/layout.tsx</code>)</h3>
+<table>
+  <thead><tr><th>역할</th><th>폰트</th><th>적용</th></tr></thead>
+  <tbody>
+    <tr><td>serif (<code>font-serif</code>)</td><td><strong>Newsreader</strong> (400/500/600 + italic 400/500)</td><td>모든 제목, 아티클 본문, 인용/데크, 카드 제목, 브랜드</td></tr>
+    <tr><td>sans (<code>font-sans</code>, 기본)</td><td><strong>Helvetica Neue</strong> / Helvetica / Arial (시스템)</td><td>네비·버튼·칩·메타·라벨·UI 전반</td></tr>
+    <tr><td>mono (<code>font-mono</code>)</td><td><strong>JetBrains Mono</strong> (400/500)</td><td>코드블록, 에디터 소스 표시, figure placeholder 라벨</td></tr>
+  </tbody>
+</table>
+<h3>6.3 아이콘</h3>
+<p><strong>lucide-react</strong> 설치. stroke-width 1.6~1.8, 14~22px, color <code>currentColor</code>. 커스텀 SVG 금지. 사용 아이콘: <code>layout-dashboard, file-text, pen-line, file-pen-line, lock, plus, plus-square, home, history, chevron-down, chevron-right, folder, settings, help-circle, bell, circle-user, search, command, arrow-right, git-branch, brain, activity, pin, sparkles, git-fork, book-open, pen-tool, database, star, archive, info, share-2, send, bold, italic, strikethrough, heading-1, heading-2, list, list-ordered, link, image, code, quote, eye</code>.</p>
+<h3>6.4 색 토큰 (tokens.css)</h3>
+<table>
+  <thead><tr><th>토큰</th><th>HEX</th><th>용도</th></tr></thead>
+  <tbody>
+    <tr><td><code>bg-app</code></td><td><span class="sw" style="background:#f6f7f9"></span>#f6f7f9</td><td>앱/페이지 배경 (cool gray)</td></tr>
+    <tr><td><code>surface</code></td><td><span class="sw" style="background:#fff"></span>#ffffff</td><td>카드·사이드바·상단 바</td></tr>
+    <tr><td><code>surface-alt</code></td><td><span class="sw" style="background:#fafbfc"></span>#fafbfc</td><td>테이블 헤더 등 미묘한 면</td></tr>
+    <tr><td><code>ink</code></td><td><span class="sw" style="background:#1b2430"></span>#1b2430</td><td>기본 텍스트·제목</td></tr>
+    <tr><td><code>ink-2</code></td><td><span class="sw" style="background:#384150"></span>#384150</td><td>아티클 본문</td></tr>
+    <tr><td><code>ink-secondary</code></td><td><span class="sw" style="background:#5b6573"></span>#5b6573</td><td>보조 텍스트·네비·아이콘</td></tr>
+    <tr><td><code>ink-muted</code></td><td><span class="sw" style="background:#8b94a3"></span>#8b94a3</td><td>3차 텍스트</td></tr>
+    <tr><td><code>ink-faint</code></td><td><span class="sw" style="background:#9aa2b1"></span>#9aa2b1</td><td>메타·캡션·푸터</td></tr>
+    <tr><td><code>primary</code></td><td><span class="sw" style="background:#182232"></span>#182232</td><td>기본 버튼·활성 바·코드블록 배경·다크 타일</td></tr>
+    <tr><td><code>border</code></td><td><span class="sw" style="background:#ebedf1"></span>#ebedf1</td><td>카드·패널·사이드바 보더</td></tr>
+    <tr><td><code>border-strong</code> / <code>border-input</code></td><td><span class="sw" style="background:#e6e8ec"></span>#e6e8ec / <span class="sw" style="background:#d8dbe1"></span>#d8dbe1</td><td>구분선 / 보조 버튼·입력 보더</td></tr>
+    <tr><td><code>chip-bg</code> / <code>chip-bg-2</code></td><td><span class="sw" style="background:#f1f2f5"></span>#f1f2f5 / <span class="sw" style="background:#eef0f3"></span>#eef0f3</td><td>태그 칩·호버·콜아웃 배경</td></tr>
+    <tr><td><code>accent-soft</code></td><td><span class="sw" style="background:#e9ebf6"></span>#e9ebf6 + <span class="sw" style="background:#3a4a78"></span>#3a4a78</td><td>아이콘 타일(라벤더 배경 + 글리프)</td></tr>
+    <tr><td><code>star</code></td><td><span class="sw" style="background:#c9a23a"></span>#c9a23a</td><td>즐겨찾기 별</td></tr>
+  </tbody>
+</table>
+<p>코드블록 구문색(다크 <code>#182232</code> 위): fg <code>#cdd6e4</code>, comment <code>#7d8aa3</code>, string <code>#9ecb9e</code>, number <code>#d8a979</code>. <strong>색 원칙</strong>: 화이트/쿨그레이 베이스, 다크 네이비는 액센트만. 그림자 거의 없이 <strong>1px 보더로 면 분리</strong>(카드 그림자 <code>0 4px 16px rgba(20,30,48,.05)</code> 정도만).</p>
+<h3>6.5 radius / 간격 / 레이아웃</h3>
+<p>radius: sm 6 · md 9 · lg 12 · xl 14 · tile 11. 간격: 4px 스케일(4·8·12·16·18·20·22·28·32·46). 레이아웃: 사이드바 228/212, 토픽바 54, 콘텐츠 max 940. tracking: 큰 제목 <code>-0.02em</code>, 대문자 라벨 <code>+0.08em</code>.</p>
+<h3>6.6 타이포 스케일 (px / 폰트 / 굵기)</h3>
+<table>
+  <thead><tr><th>요소</th><th>크기·폰트</th></tr></thead>
+  <tbody>
+    <tr><td>홈 h1 "Home"</td><td>30 / serif 600 / -.02em</td></tr>
+    <tr><td>아티클 h1</td><td>38 / serif 600 / line 1.12 / -.02em</td></tr>
+    <tr><td>섹션 h2 (Recently edited 등)</td><td>18~24 / serif 600</td></tr>
+    <tr><td>아티클 본문</td><td>15 / serif / line 1.65 / <code>#384150</code></td></tr>
+    <tr><td>데크·인용</td><td>16 / serif italic / <code>#5b6573</code></td></tr>
+    <tr><td>UI 기본 / 네비·버튼</td><td>12.5~13.5 / sans</td></tr>
+    <tr><td>메타·캡션·대문자 라벨</td><td>10.5~11.5 / sans / 라벨 tracking .06~.09em</td></tr>
+    <tr><td>에디터 소스·코드</td><td>13.5 / mono / line 1.85</td></tr>
+  </tbody>
+</table>
+
+<h2>7. 화면별 설계 (청사진 요약)</h2>
+<h3>7.1 홈 대시보드 <code>/</code> (Frame 1)</h3>
+<ul>
+  <li>페이지 헤더: h1 "Home" + 메타("Your knowledge workspace · N pages") + 우측 <code>+ New Page</code>.</li>
+  <li>탭: <strong>Recently edited</strong>(활성·2px 밑줄) · Starred · Created by me · All pages.</li>
+  <li><strong>JUMP BACK IN</strong>: 4열 카드(아이콘 타일 + 제목 + "폴더 · Edited N ago").</li>
+  <li>2단 그리드 <code>1fr 290px</code>:
+    <ul>
+      <li>좌: "Recently edited" 카드 테이블 — 컬럼 <code>NAME / TAG / UPDATED</code>, 각 행에 문서 아이콘·제목·브레드크럼·<strong>태그 칩</strong>·상대시각·아바타.</li>
+      <li>우 레일: <strong>Starred</strong> · <strong>Recent activity</strong>(점 불릿 피드) · <strong>Quick access</strong>(Global Graph/Reading Queue/Canvas Mode/Collections → 백로그, 비활성).</li>
+    </ul>
+  </li>
+  <li>푸터: 카피라이트 + Privacy/Terms/API(링크 placeholder).</li>
+</ul>
+<h3>7.2 읽기 / 아티클 <code>/p/[slug]</code> (Frame 2)</h3>
+<ul>
+  <li>flex(48px gap, max 880): <strong>아티클 컬럼</strong> + <strong>TOC 사이드(172px, sticky)</strong>.</li>
+  <li>아티클: 브레드크럼 → h1(38 serif) → 데크(좌 3px 보더 인용) → h2/본문(serif 15/1.65) → <strong>figure</strong>(이미지+캡션) → 불릿 → <strong>코드블록</strong>(다크) → <strong>Editor's Note 콜아웃</strong> → <strong>태그 칩</strong> → 저자·읽기시간.</li>
+  <li>TOC: "ON THIS PAGE"(스크롤 스파이 활성) + "RELATED PAGES".</li>
+  <li>푸터: "Last synced …" + Privacy/Terms + "N pages indexed".</li>
+  <li>본문 HTML은 <code>blocksToHtml</code> → <strong>sanitize</strong>(공개 노출, Publish 스펙 §8). 저자·읽기시간·Related는 S5에서 데이터/계산.</li>
+</ul>
+<h3>7.3 에디터 <code>/edit/[id]</code> (Frame 3) — BlockNote 유지 + 청사진 룩</h3>
+<ul>
+  <li><strong>BlockNote 블록 에디터는 그대로</strong>. 청사진의 raw 마크다운 소스 표시는 디자인 표현일 뿐 — 우리는 셸/헤더/툴바 디자인만 채택한다.</li>
+  <li>에디터 헤더(h56): <code>file-pen-line</code> + 문서 제목(serif 17) + 우측 <strong>Share</strong>(아웃라인) · <strong>Publish</strong>(다크, <code>send</code>). Publish는 Publish 스펙의 <code>setDocumentPublished</code> 연결.</li>
+  <li>툴바(h48): bold/italic/strikethrough | h1/h2 | list/list-ordered | link/image/code/quote · 우측 <strong>Preview</strong>(<code>eye</code>) 토글. 이 버튼들은 BlockNote의 포맷 명령에 바인딩(BlockNote 기본 툴바를 청사진 룩의 커스텀 툴바로 대체/스타일).</li>
+  <li>본문: BlockNote 에디터 영역(흰 배경, 넉넉한 패딩). 기존 자동저장 유지.</li>
+</ul>
+
+<h2>8. S1~S6 로드맵 (코어 위키 우선)</h2>
+<p>각 슬라이스는 <strong>독립적으로 동작·테스트 가능한 단위</strong>. 완료 조건은 공통: <code>pnpm tsc --noEmit</code> + <code>pnpm test</code> 통과(CLAUDE.md §3), 신규/변경 동작에 vitest 동반.</p>
+<table>
+  <thead><tr><th>슬라이스</th><th>범위</th><th>신규/변경 데이터</th><th>정합</th></tr></thead>
+  <tbody>
+    <tr><td><strong>S1 · 디자인 시스템 + 앱 셸</strong></td><td>Tailwind+토큰 도입, 폰트 3종 교체, lucide-react, <code>tokens.css</code>/<code>tailwind.config</code>, 공통 <code>AppShell</code>(사이드바+토픽바+콘텐츠)·User 메뉴·로그아웃. 기존 화면을 셸에 래핑.</td><td>—</td><td>토대</td></tr>
+    <tr><td><strong>S2 · 홈 대시보드</strong></td><td><code>/</code> 대시보드: 탭·Jump back in·Recently edited 테이블(태그 칩)·우측 레일. <code>/me</code> 흡수.</td><td>documents 조회 확장(목록·최근·정렬)</td><td>—</td></tr>
+    <tr><td><strong>S3 · 지식 트리 &amp; 네비</strong></td><td>사이드바 폴더 계층 트리, Favorites·Archive·Recent 화면, 문서↔폴더 배치.</td><td><strong>folders</strong>(신규) + <code>documents.folder_id</code> + <code>is_favorite</code>/<code>is_archived</code></td><td>—</td></tr>
+    <tr><td><strong>S4 · 에디터 UI</strong></td><td>BlockNote에 청사진 헤더·툴바·Share/Publish. Publish 액션 연결.</td><td>(Publish 스펙의 status/published_at)</td><td>Publish 스펙 <strong>§6 "툴바 챙은 S4"</strong> ✅</td></tr>
+    <tr><td><strong>S5 · 읽기 뷰</strong></td><td><code>/p/[slug]</code>: 브레드크럼·TOC(스크롤 스파이)·Related·figure·코드·Editor's Note·태그·저자·sync 푸터. sanitize 렌더.</td><td>reading_time(계산), Related(태그/폴더 기반)</td><td>Publish 스펙 <strong>§7 "읽기뷰·TOC는 S5"</strong> ✅</td></tr>
+    <tr><td><strong>S6 · 검색 + 태그</strong></td><td>Quick find ⌘K 커맨드 팔레트, 태그 칩·필터, 태그별 목록.</td><td><strong>tags</strong>(신규) + <code>documents.tags</code> 연결</td><td>—</td></tr>
+  </tbody>
+</table>
+<div class="callout">
+  <strong>Publish 기능과의 관계.</strong> 앞서 검토한 <code>2026-06-29-publish-feature-design.html</code>는 기능(액션·RLS·<code>/p</code> 라우트·sanitize)을 정의한다. 그 <strong>UI는 본 로드맵 S4(버튼/툴바)·S5(읽기 뷰)에서 입힌다.</strong> 즉 Publish 기능 구현과 UI 폴리시는 S4/S5에서 만난다. (Publish 기능 자체를 S4 이전에 먼저 구현할지, S4와 묶을지는 S1 완료 후 결정.)
+</div>
+
+<h2>9. 데이터 모델 확장 (로드맵 전체)</h2>
+<p>모든 신규 테이블은 <code>owner_id</code> 스코프 + RLS(<code>auth.uid() = owner_id</code>)로 멀티테넌트를 유지한다. 정식 마이그레이션 <code>supabase/migrations/000N_*.sql</code> + youllog 수동 적용 SQL <code>docs/setup/*.sql</code>(재실행 안전) 쌍으로 관리(기존 패턴).</p>
+<table>
+  <thead><tr><th>대상</th><th>변경</th><th>슬라이스</th></tr></thead>
+  <tbody>
+    <tr><td><code>documents</code></td><td>+ <code>status</code>/<code>published_at</code>(Publish), + <code>folder_id</code>, + <code>is_favorite</code>, + <code>is_archived</code>, + <code>tags</code>(연결), + <code>reading_time</code>(계산/캐시)</td><td>S3·S5·S6 + Publish</td></tr>
+    <tr><td><code>folders</code> (신규)</td><td>id, owner_id, parent_id(self-ref), name, position, created_at</td><td>S3</td></tr>
+    <tr><td><code>tags</code> (신규)</td><td>id, owner_id, name, color; <code>document_tags</code> 조인(or <code>documents.tags</code> 배열)</td><td>S6</td></tr>
+    <tr><td>contributors / 협업</td><td>워크스페이스 멤버십·공동편집</td><td><strong>백로그</strong></td></tr>
+  </tbody>
+</table>
+
+<h2>10. 비전 백로그 (이번 로드맵 밖)</h2>
+<p>청사진에 보이지만 코어 위키 이후로 미루는 것. UI에 <strong>자리(비활성 항목)만</strong> 두고 기능은 후속.</p>
+<ul>
+  <li><strong>Graphs</strong>(Global Graph, 노트 그래프 뷰) · <strong>Canvas Mode</strong> · <strong>Templates</strong> · <strong>Collections</strong> · <strong>Reading Queue</strong>.</li>
+  <li><strong>멀티 협업</strong>: 워크스페이스 공유, contributors, 저자 표시(현재는 owner 단일). 청사진의 "4 contributors", "Dr. Julian Vance"는 이 단계에서 실데이터화.</li>
+  <li>slug 기반 편집 URL(<code>/p/:slug/edit</code>), 예쁜 한글 슬러그.</li>
+</ul>
+
+<h2>11. 테스트 전략</h2>
+<ul>
+  <li><strong>vitest 단위</strong>: 각 슬라이스의 순수 로직 — 토큰/유틸(S1), 목록·정렬·그룹핑(S2), 트리 빌드·경로(S3), 툴바 명령 매핑(S4), TOC 추출·sanitize·reading_time(S5), 검색 필터·태그 매칭(S6). 동작을 주석으로 스펙과 일치 검증.</li>
+  <li><strong>회귀</strong>: 매 슬라이스에서 이전 스위트 동반 통과. 신규가 기존을 깨면 <strong>테스트가 아니라 신규 코드를 수정</strong>(CLAUDE.md §3).</li>
+  <li><strong>e2e(Playwright)</strong>: 로그인 → 홈 → 폴더/문서 탐색 → 편집·자동저장 → Publish → <code>/p/[slug]</code> 익명 조회 한 바퀴(슬라이스 누적 시).</li>
+</ul>
+
+<h2>12. 미해결 / 검토 필요</h2>
+<ul>
+  <li><strong>서비스명/브랜드</strong>: "Digital Sanctuary"를 그대로 쓸지, wiki 자체 브랜드로 바꿀지 — S1 셸 전에 확정(placeholder로 시작 가능).</li>
+  <li><strong>Publish 기능 구현 시점</strong>: S1 직후 단독으로 먼저 구현 vs S4와 묶기 — S1 완료 후 결정.</li>
+  <li><strong>BlockNote 툴바 커스터마이즈 한계</strong>: 청사진 툴바를 BlockNote 포맷 명령에 어디까지 바인딩 가능한지 — S4 상세 스펙에서 검증(한계 시 BlockNote 기본 툴바 스타일링으로 폴백).</li>
+  <li><strong>태그 저장 방식</strong>: <code>documents.tags</code> 배열 vs <code>document_tags</code> 조인 테이블 — S6 상세 스펙에서 확정.</li>
+  <li><strong>Helvetica Neue</strong>는 시스템 폰트(비-맥 환경 폴백 Arial). 웹폰트 대체(Inter 등) 도입 여부는 후속 검토.</li>
+</ul>
+
+<hr />
+<p class="meta">end of master design. 다음: 각 슬라이스 진입 시 개별 상세 스펙 → 구현 계획 → 팀 구현. 첫 타깃 S1.</p>
+</main>
+</body>
+</html>
