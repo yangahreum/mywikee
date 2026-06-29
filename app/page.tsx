@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getDashboardData } from "@/lib/home/get-dashboard";
+import { getTree } from "@/lib/tree/get-tree";
 import { AppShell } from "@/components/shell/AppShell";
 import { PageHeader } from "@/components/home/PageHeader";
 import { HomeTabs } from "@/components/home/HomeTabs";
@@ -18,11 +19,14 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { totalCount, recent } = await getDashboardData(user.id);
+  const [{ totalCount, recent }, tree] = await Promise.all([
+    getDashboardData(user.id),
+    getTree(user.id),
+  ]);
   const now = new Date();
 
   return (
-    <AppShell email={user.email ?? ""}>
+    <AppShell email={user.email ?? ""} tree={tree}>
       <PageHeader totalCount={totalCount} />
       <HomeTabs />
       <JumpBackIn docs={recent} now={now} />

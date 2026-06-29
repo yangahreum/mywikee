@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getDocument } from "@/lib/documents/get";
+import { getTree } from "@/lib/tree/get-tree";
 import { Editor } from "./editor";
 import { AppShell } from "@/components/shell/AppShell";
 
@@ -15,13 +16,17 @@ export default async function EditPage({ params }: Props) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const doc = await getDocument(id, user.id);
+  const [doc, tree] = await Promise.all([
+    getDocument(id, user.id),
+    getTree(user.id),
+  ]);
   if (!doc) notFound();
 
   return (
     <AppShell
       email={user.email ?? ""}
-      sidebarWidth={212}
+      tree={tree}
+      sidebarWidth={228}
       searchPlaceholder="Search..."
       variant="bare"
     >
