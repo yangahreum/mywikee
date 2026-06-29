@@ -19,7 +19,12 @@ export default async function EditPage({ params }: Props) {
   if (!doc) notFound();
 
   return (
-    <AppShell email={user.email ?? ""} sidebarWidth={212} searchPlaceholder="Search...">
+    <AppShell
+      email={user.email ?? ""}
+      sidebarWidth={212}
+      searchPlaceholder="Search..."
+      variant="bare"
+    >
       <Editor id={doc.id} initialTitle={doc.title} initialContent={doc.content} />
     </AppShell>
   );

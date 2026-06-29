@@ -37,4 +37,26 @@ describe("AppShell", () => {
       screen.getByRole("link", { name: /Favorites/ }).getAttribute("aria-current"),
     ).toBe("page");
   });
+
+  // 스펙: 기본 variant 는 중앙 940 래퍼(max-w)를 쓴다 (홈·읽기 — 회색 배경 위 카드)
+  it("기본 variant 는 max-940 중앙 래퍼를 쓴다", () => {
+    const { container } = render(
+      <AppShell email="a@b.com">
+        <div>x</div>
+      </AppShell>,
+    );
+    expect(container.querySelector('[class*="max-w-"]')).toBeTruthy();
+  });
+
+  // 스펙: variant="bare" 는 흰 배경(bg-surface) 전체폭, max-940 래퍼를 쓰지 않는다 (에디터 — 청사진 Frame 3)
+  it('variant="bare" 는 흰 배경 콘텐츠 영역을 쓰고 max-940 래퍼를 쓰지 않는다', () => {
+    const { container } = render(
+      <AppShell email="a@b.com" variant="bare">
+        <div>BARE_CONTENT</div>
+      </AppShell>,
+    );
+    expect(screen.getByText("BARE_CONTENT")).toBeTruthy();
+    expect(container.querySelector(".bg-surface")).toBeTruthy();
+    expect(container.querySelector('[class*="max-w-"]')).toBeNull();
+  });
 });
