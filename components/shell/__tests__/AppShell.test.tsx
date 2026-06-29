@@ -25,16 +25,16 @@ describe("AppShell", () => {
     expect(screen.getByText("areum")).toBeTruthy();
   });
 
-  // 스펙: 현재 경로의 네비가 활성
+  // 스펙(§1.1 요구사항 변경): 현재 경로의 네비가 활성 (네비는 Home·Recent 2개로 통일)
   it("usePathname 결과로 네비 활성 상태를 정한다", () => {
-    mockPathname.mockReturnValue("/favorites");
+    mockPathname.mockReturnValue("/recent");
     render(
       <AppShell email="a@b.com" searchPlaceholder="Search...">
         <div>x</div>
       </AppShell>,
     );
     expect(
-      screen.getByRole("link", { name: /Favorites/ }).getAttribute("aria-current"),
+      screen.getByRole("link", { name: /Recent/ }).getAttribute("aria-current"),
     ).toBe("page");
   });
 

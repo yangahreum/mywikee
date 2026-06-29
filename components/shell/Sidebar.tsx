@@ -7,9 +7,11 @@ type Props = {
   userSlot: React.ReactNode;
   /** 사이드바 너비 px (홈 228, 읽기·편집 212). 기본 228. */
   width?: number;
+  /** 네비 아래 KNOWLEDGE TREE 영역 (KnowledgeTree 주입 지점). */
+  treeSlot?: React.ReactNode;
 };
 
-export function Sidebar({ pathname, userSlot, width = 228 }: Props) {
+export function Sidebar({ pathname, userSlot, width = 228, treeSlot }: Props) {
   return (
     <aside
       style={{ width }}
@@ -56,6 +58,9 @@ export function Sidebar({ pathname, userSlot, width = 228 }: Props) {
           );
         })}
       </nav>
+
+      {/* KNOWLEDGE TREE 슬롯 */}
+      {treeSlot && <div className="mt-4 flex-1 overflow-y-auto">{treeSlot}</div>}
 
       {/* 하단: 사용자 슬롯 */}
       <div className="mt-auto">{userSlot}</div>

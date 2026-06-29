@@ -4,6 +4,8 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { UserMenu } from "./UserMenu";
+import { KnowledgeTree } from "./tree/KnowledgeTree";
+import type { TreeNode } from "@/lib/tree/types";
 
 type Props = {
   email: string;
@@ -16,6 +18,8 @@ type Props = {
    * - "bare": 흰(bg-surface) 배경 전체폭, 래퍼 없음 (에디터 — 청사진 Frame 3).
    */
   variant?: "default" | "bare";
+  /** 사이드바 KNOWLEDGE TREE 데이터 (없으면 빈 트리). */
+  tree?: TreeNode[];
   children: React.ReactNode;
 };
 
@@ -24,6 +28,7 @@ export function AppShell({
   searchPlaceholder = "Quick find...",
   sidebarWidth = 228,
   variant = "default",
+  tree,
   children,
 }: Props) {
   const pathname = usePathname();
@@ -33,6 +38,7 @@ export function AppShell({
         pathname={pathname}
         width={sidebarWidth}
         userSlot={<UserMenu email={email} />}
+        treeSlot={<KnowledgeTree nodes={tree ?? []} />}
       />
       <main className="flex flex-1 flex-col overflow-hidden">
         <Topbar searchPlaceholder={searchPlaceholder} />

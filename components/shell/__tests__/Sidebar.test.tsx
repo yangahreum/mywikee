@@ -3,26 +3,19 @@ import { render, screen } from "@testing-library/react";
 import { Sidebar } from "@/components/shell/Sidebar";
 
 describe("Sidebar", () => {
-  // 스펙: 브랜드 + 6개 네비 항목 렌더
+  // 스펙(§1.1 요구사항 변경): 브랜드 + Home·Recent 2개 네비 항목 렌더
   it("브랜드와 모든 네비 항목을 렌더한다", () => {
     render(<Sidebar pathname="/" userSlot={<div>user</div>} />);
     expect(screen.getByText("Digital Sanctuary")).toBeTruthy();
-    for (const label of [
-      "Home",
-      "Recent",
-      "Knowledge Base",
-      "Favorites",
-      "Folders",
-      "Archive",
-    ]) {
+    for (const label of ["Home", "Recent"]) {
       expect(screen.getByText(label)).toBeTruthy();
     }
   });
 
   // 스펙: 활성 항목은 aria-current="page"
   it('활성 항목에 aria-current="page" 를 준다', () => {
-    render(<Sidebar pathname="/favorites" userSlot={null} />);
-    const active = screen.getByRole("link", { name: /Favorites/ });
+    render(<Sidebar pathname="/recent" userSlot={null} />);
+    const active = screen.getByRole("link", { name: /Recent/ });
     expect(active.getAttribute("aria-current")).toBe("page");
     const inactive = screen.getByRole("link", { name: /Home/ });
     expect(inactive.getAttribute("aria-current")).toBeNull();
@@ -32,5 +25,17 @@ describe("Sidebar", () => {
   it("userSlot 을 렌더한다", () => {
     render(<Sidebar pathname="/" userSlot={<div>USER_SLOT</div>} />);
     expect(screen.getByText("USER_SLOT")).toBeTruthy();
+  });
+
+  // 스펙: treeSlot 이 주어지면 네비 아래 KNOWLEDGE TREE 영역으로 렌더
+  it("treeSlot 을 렌더한다", () => {
+    render(
+      <Sidebar
+        pathname="/"
+        userSlot={null}
+        treeSlot={<div>TREE_SLOT</div>}
+      />,
+    );
+    expect(screen.getByText("TREE_SLOT")).toBeTruthy();
   });
 });
