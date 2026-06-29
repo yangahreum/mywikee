@@ -49,3 +49,17 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
+/*
+ * 클릭 가능 요소는 마우스 오버 시 포인터 커서.
+ * Tailwind v4 preflight 가 <button> 커서를 default 로 리셋하므로 복원한다.
+ * 비활성(disabled / aria-disabled) 은 제외해 "클릭 불가"를 그대로 표현.
+ */
+@layer base {
+  button:not(:disabled),
+  a[href],
+  label[for],
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
