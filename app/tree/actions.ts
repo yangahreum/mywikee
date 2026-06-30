@@ -83,6 +83,39 @@ export async function moveItem(input: z.infer<typeof MoveInput>) {
   return { ok: true as const };
 }
 
+const DeleteInput = z.object({ id: z.string().uuid() });
+
+// 폴더 삭제. DB(0003_folders.sql)의 FK 제약으로 하위 폴더는 ON DELETE CASCADE 연쇄 삭제,
+// 폴더 안 문서는 ON DELETE SET NULL 로 루트로 보존된다. owner 이중조건으로 타인 항목 삭제 차단.
+export async function deleteFolder(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "unauthorized" };
+  const parsed = DeleteInput.safeParse({ id });
+  if (!parsed.success) return { ok: false as const, error: "validation" };
+
+  const { error } = await supabase.from("folders")
+    .delete().eq("id", parsed.data.id).eq("owner_id", user.id);
+  if (error) return { ok: false as const, error: "db_error" };
+  revalidatePath("/");
+  return { ok: true as const };
+}
+
+// 문서 삭제. owner 이중조건으로 타인 항목 삭제 차단.
+export async function deleteDocument(id: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "unauthorized" };
+  const parsed = DeleteInput.safeParse({ id });
+  if (!parsed.success) return { ok: false as const, error: "validation" };
+
+  const { error } = await supabase.from("documents")
+    .delete().eq("id", parsed.data.id).eq("owner_id", user.id);
+  if (error) return { ok: false as const, error: "db_error" };
+  revalidatePath("/");
+  return { ok: true as const };
+}
+
 function collectSubtree(rootId: string, folders: FolderRow[]): string[] {
   const out = [rootId];
   for (const f of folders.filter((x) => x.parentId === rootId)) out.push(...collectSubtree(f.id, folders));

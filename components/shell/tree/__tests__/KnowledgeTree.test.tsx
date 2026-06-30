@@ -28,4 +28,16 @@ describe("KnowledgeTree", () => {
     render(<KnowledgeTree nodes={[]} />);
     expect(screen.getByText(/폴더가 없습니다|\+ 로 만들기/)).toBeTruthy();
   });
+  // 스펙: 폴더 행에 삭제 트리거(aria-label 으로 식별)가 렌더된다(후속 추가 기능).
+  it("폴더 행에 삭제 버튼이 렌더된다", () => {
+    render(<KnowledgeTree nodes={nodes} />);
+    expect(screen.getByLabelText("Projects 폴더 삭제")).toBeTruthy();
+  });
+  // 스펙: 문서 행에 삭제 트리거가 렌더된다. Link(href) 는 유지되어 네비게이션 불변.
+  it("문서 행에 삭제 버튼이 렌더되고 Link href 가 유지된다", () => {
+    render(<KnowledgeTree nodes={nodes} />);
+    expect(screen.getByLabelText("Root Doc 문서 삭제")).toBeTruthy();
+    const link = screen.getByText("Root Doc").closest("a");
+    expect(link?.getAttribute("href")).toBe("/edit/d2");
+  });
 });
