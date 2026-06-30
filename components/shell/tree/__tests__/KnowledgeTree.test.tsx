@@ -6,9 +6,9 @@ import type { TreeNode } from "@/lib/tree/types";
 const nodes: TreeNode[] = [
   {
     kind: "folder", id: "A", name: "Projects", parentId: null, depth: 1, position: 0,
-    children: [{ kind: "doc", id: "d1", title: "Doc One", folderId: "A" }],
+    children: [{ kind: "doc", id: "d1", title: "Doc One", slug: "doc-one", folderId: "A" }],
   },
-  { kind: "doc", id: "d2", title: "Root Doc", folderId: null },
+  { kind: "doc", id: "d2", title: "Root Doc", slug: "root-doc", folderId: null },
 ];
 
 describe("KnowledgeTree", () => {

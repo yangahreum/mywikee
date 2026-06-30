@@ -9,6 +9,7 @@ export type FolderRow = {
 export type DocRow = {
   id: string;
   title: string;
+  slug: string;
   folderId: string | null;
 };
 

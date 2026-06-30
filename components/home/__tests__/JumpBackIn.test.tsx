@@ -3,8 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { JumpBackIn } from "@/components/home/JumpBackIn";
 
 const docs = [
-  { id: "1", title: "Systems Architecture", project: "Projects", updatedAt: "2026-06-29T10:00:00Z" },
-  { id: "2", title: "Cognitive Load", project: "Research", updatedAt: "2026-06-29T07:00:00Z" },
+  { id: "1", title: "Systems Architecture", slug: "systems-architecture", project: "Projects", updatedAt: "2026-06-29T10:00:00Z" },
+  { id: "2", title: "Cognitive Load", slug: "cognitive-load", project: "Research", updatedAt: "2026-06-29T07:00:00Z" },
 ];
 const NOW = new Date("2026-06-29T12:00:00Z");
 

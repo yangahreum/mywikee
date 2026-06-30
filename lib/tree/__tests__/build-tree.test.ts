@@ -8,8 +8,8 @@ const folders: FolderRow[] = [
   { id: "A1", name: "A1", parentId: "A", depth: 2, position: 0 },
 ];
 const docs: DocRow[] = [
-  { id: "d1", title: "doc1", folderId: "A" },
-  { id: "d2", title: "doc2", folderId: null }, // 루트 문서
+  { id: "d1", title: "doc1", slug: "doc1", folderId: "A" },
+  { id: "d2", title: "doc2", slug: "doc2", folderId: null }, // 루트 문서
 ];
 
 describe("buildTree", () => {

@@ -20,7 +20,7 @@ describe("rail/RecentActivity", () => {
   it("최근 문서를 활동으로 표시", () => {
     render(
       <RecentActivity
-        docs={[{ id: "1", title: "Bio Interface", project: "P", updatedAt: "2026-06-29T10:00:00Z" }]}
+        docs={[{ id: "1", title: "Bio Interface", slug: "bio-interface", project: "P", updatedAt: "2026-06-29T10:00:00Z" }]}
         now={NOW}
       />,
     );

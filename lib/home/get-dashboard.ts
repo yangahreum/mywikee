@@ -4,6 +4,7 @@ import type { DashboardData, DashboardDoc } from "./types";
 type Row = {
   id: string;
   title: string | null;
+  slug: string;
   project: string | null;
   updated_at: string;
 };
@@ -13,6 +14,7 @@ export function mapDashboardRow(row: Row): DashboardDoc {
   return {
     id: row.id,
     title: row.title ?? "",
+    slug: row.slug,
     project: row.project ?? "",
     updatedAt: row.updated_at,
   };
@@ -32,7 +34,7 @@ export async function getDashboardData(
 
   const { data, error } = await supabase
     .from("documents")
-    .select("id, title, project, updated_at")
+    .select("id, title, slug, project, updated_at")
     .eq("owner_id", ownerId)
     .order("updated_at", { ascending: false })
     .limit(recentLimit);

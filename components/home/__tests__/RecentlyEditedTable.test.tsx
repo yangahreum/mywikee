@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { RecentlyEditedTable } from "@/components/home/RecentlyEditedTable";
 
 const docs = [
-  { id: "1", title: "Systems Architecture", project: "Projects", updatedAt: "2026-06-29T10:00:00Z" },
+  { id: "1", title: "Systems Architecture", slug: "systems-architecture", project: "Projects", updatedAt: "2026-06-29T10:00:00Z" },
 ];
 const NOW = new Date("2026-06-29T12:00:00Z");
 
@@ -26,7 +26,7 @@ describe("RecentlyEditedTable", () => {
   it("project 없으면 태그칩 생략", () => {
     render(
       <RecentlyEditedTable
-        docs={[{ id: "2", title: "무제", project: "", updatedAt: "2026-06-29T10:00:00Z" }]}
+        docs={[{ id: "2", title: "무제", slug: "untitled", project: "", updatedAt: "2026-06-29T10:00:00Z" }]}
         now={NOW}
       />,
     );
