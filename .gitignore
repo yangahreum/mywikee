@@ -20,6 +20,8 @@ next-env.d.ts
 /test-results
 /blob-report
 /playwright/.cache
+# e2e 세션 주입 storageState (라이브 세션 토큰 — 절대 커밋 금지)
+/e2e/.auth
 
 # env files (keep .env.example tracked)
 .env
