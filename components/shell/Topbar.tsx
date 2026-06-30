@@ -1,4 +1,4 @@
-import { Search, Bell, Settings } from "lucide-react";
+import { Search, Settings } from "lucide-react";
 
 type Props = {
   searchPlaceholder: string;
@@ -35,7 +35,6 @@ export function Topbar({ searchPlaceholder }: Props) {
           </span>
         ))}
       </nav>
-      <Bell size={17} strokeWidth={1.7} className="text-ink-secondary" />
       <Settings size={17} strokeWidth={1.7} className="text-ink-secondary" />
       <div className="h-7 w-7 rounded-full bg-border-strong" aria-hidden />
       {/* publish placeholder (S4 에서 활성) */}
