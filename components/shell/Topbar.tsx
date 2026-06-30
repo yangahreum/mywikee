@@ -6,7 +6,6 @@ type Props = {
 
 const TOP_NAV = [
   { label: "Explorer", enabled: true },
-  { label: "Graphs", enabled: false },
   { label: "Templates", enabled: false },
 ];
 
