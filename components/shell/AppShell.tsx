@@ -4,8 +4,15 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { UserMenu } from "./UserMenu";
-import { KnowledgeTree } from "./tree/KnowledgeTree";
+import dynamic from "next/dynamic";
 import type { TreeNode } from "@/lib/tree/types";
+
+// @dnd-kit 의 draggable aria-describedby 는 내부 카운터로 생성돼 SSR/CSR ID가
+// 어긋난다(hydration mismatch). 트리는 클라이언트 전용으로 렌더해 원천 차단한다.
+const KnowledgeTree = dynamic(
+  () => import("./tree/KnowledgeTree").then((m) => ({ default: m.KnowledgeTree })),
+  { ssr: false },
+);
 
 type Props = {
   email: string;
