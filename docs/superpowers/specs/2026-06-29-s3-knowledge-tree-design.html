@@ -53,6 +53,35 @@
   <span class="tag">folders 신규 테이블</span><span class="tag">4단 깊이</span><span class="tag">클릭 열기 + DnD</span><span class="tag">Supabase RLS</span><span class="tag">vitest</span>
 </p>
 
+<h2>0. 기능정의 &amp; 작업</h2>
+<h3>기능정의</h3>
+<table>
+  <thead><tr><th>기능</th><th>설명</th></tr></thead>
+  <tbody>
+    <tr><td>폴더 데이터 모델</td><td><code>folders</code> 테이블(parent_id self-ref, depth, position) + <code>documents.folder_id</code> + RLS(owner).</td></tr>
+    <tr><td>4단 깊이 제약</td><td>폴더 생성·이동 시 서브트리 최대 depth ≤ 4 강제(DB CHECK + 앱). 순환 방지. 문서는 depth 미차지.</td></tr>
+    <tr><td>트리 조회 / 빌드</td><td>owner의 folders + docs 조회 → 메모리에서 계층 트리(<code>buildTree</code>) 빌드. position 정렬.</td></tr>
+    <tr><td>사이드바 트리 UI</td><td>청사진 Frame 1 KNOWLEDGE TREE 픽셀: 폴더 행(chevron+folder)·문서 행(file-text)·들여쓰기·펼침/접힘·활성.</td></tr>
+    <tr><td>폴더 생성</td><td><code>plus-square</code>로 루트/하위 폴더 생성(부모 depth+1 ≤ 4).</td></tr>
+    <tr><td>클릭 열기</td><td>폴더 클릭=토글, 문서 클릭=<code>/edit/{id}</code> 이동.</td></tr>
+    <tr><td>드래그앤드롭 재배치</td><td>문서·폴더를 다른 폴더/루트로 이동(<code>@dnd-kit</code>). 4단·순환 검증, 낙관적 UI + 롤백.</td></tr>
+    <tr><td>사이드바 통일</td><td>모든 화면 공통 트리 사이드바. <code>NAV_ITEMS</code> 6개 → Home·Recent 2개 축소. 너비 228 통일.</td></tr>
+  </tbody>
+</table>
+<h3>작업</h3>
+<table>
+  <thead><tr><th>작업</th><th>대응 기능</th><th>비고</th></tr></thead>
+  <tbody>
+    <tr><td><code>000N_folders.sql</code> · <code>docs/setup/folders.sql</code></td><td>폴더 데이터 모델</td><td>folders + folder_id + RLS + 인덱스</td></tr>
+    <tr><td><code>lib/tree/depth.ts</code> 신규(+테스트)</td><td>4단 깊이 제약</td><td>depth 계산·4단·순환 순수 함수 TDD</td></tr>
+    <tr><td><code>lib/tree/build-tree.ts</code>·<code>get-tree.ts</code>·<code>types.ts</code> 신규</td><td>트리 조회/빌드</td><td>buildTree 순수(+테스트) + 서버 조회</td></tr>
+    <tr><td><code>components/shell/tree/KnowledgeTree.tsx</code>·<code>TreeNodeRow.tsx</code> 신규</td><td>사이드바 트리 UI, 클릭 열기, DnD</td><td>재귀 행, draggable/droppable</td></tr>
+    <tr><td><code>app/(tree)/actions.ts</code>: <code>createFolder</code>·<code>moveItem</code></td><td>폴더 생성, DnD 재배치</td><td>getUser 가드 + owner + zod, depth/cycle 검증</td></tr>
+    <tr><td><code>lib/shell/nav.ts</code> 수정(+테스트) · <code>Sidebar</code>·<code>AppShell</code> 수정</td><td>사이드바 통일</td><td>NAV_ITEMS 축소, tree prop, 너비 228</td></tr>
+    <tr><td><code>app/page.tsx</code>·<code>app/edit/[id]/page.tsx</code> 수정 · <code>package.json</code></td><td>트리 조회 전달, DnD</td><td>각 페이지 getTree, <code>@dnd-kit/core</code> 추가</td></tr>
+  </tbody>
+</table>
+
 <h2>1. 배경 &amp; 범위</h2>
 <p>
   현재 <code>documents</code>는 평면(<code>project</code> 텍스트 필드뿐)이다. S3는 <strong>폴더 계층</strong>을 도입해 사이드바 Knowledge Tree(현 placeholder)를 실데이터로 채운다.

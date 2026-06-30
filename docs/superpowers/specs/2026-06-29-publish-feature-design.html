@@ -53,6 +53,33 @@
   <span class="tag">Next.js</span><span class="tag">Supabase RLS</span><span class="tag">BlockNote→HTML</span><span class="tag">vitest</span>
 </p>
 
+<h2>0. 기능정의 &amp; 작업</h2>
+<h3>기능정의</h3>
+<table>
+  <thead><tr><th>기능</th><th>설명</th></tr></thead>
+  <tbody>
+    <tr><td>발행 상태(draft/published)</td><td><code>documents.status</code> + <code>published_at</code> 추가. 발행 상태 관리.</td></tr>
+    <tr><td>공개 읽기 RLS</td><td>기존 owner 전체 접근 유지 + <code>status='published'</code> 문서는 익명 포함 누구나 SELECT(OR 합산). 쓰기는 owner만.</td></tr>
+    <tr><td>발행 토글 서버 액션</td><td><code>setDocumentPublished(id, published)</code> — owner 가드 + zod + status/published_at UPDATE + revalidate. 반환에 slug 포함.</td></tr>
+    <tr><td>에디터 발행 UI</td><td>Publish/Unpublish 토글 버튼 + published 시 공개 URL 표시·복사. (디자인 툴바는 S4.)</td></tr>
+    <tr><td>공개 읽기 라우트 <code>/p/[slug]</code></td><td>익명 서버 컴포넌트. slug로 published 1건 조회, 없으면 404. content→HTML→sanitize→읽기 전용 렌더.</td></tr>
+    <tr><td>HTML sanitize(보안)</td><td>공개 경계에서 <code>script</code>/<code>on*</code> 제거, BlockNote 출력 태그만 허용. XSS 차단.</td></tr>
+  </tbody>
+</table>
+<h3>작업</h3>
+<table>
+  <thead><tr><th>작업</th><th>대응 기능</th><th>비고</th></tr></thead>
+  <tbody>
+    <tr><td><code>0003_documents_publish.sql</code> · <code>docs/setup/documents-publish.sql</code></td><td>발행 상태, 공개 읽기 RLS</td><td>status/published_at + 인덱스 + 공개 RLS, 수동 SQL 재실행 안전</td></tr>
+    <tr><td><code>app/edit/[id]/actions.ts</code> 추가</td><td>발행 토글 서버 액션</td><td><code>setDocumentPublished</code>, owner 이중 보호</td></tr>
+    <tr><td><code>app/edit/[id]/page.tsx</code>·<code>editor.tsx</code> 수정</td><td>에디터 발행 UI</td><td>status 로드 + Publish/Unpublish 버튼 + URL 복사</td></tr>
+    <tr><td><code>app/p/[slug]/page.tsx</code> 신규</td><td>공개 읽기 라우트</td><td>익명 조회 + sanitize 렌더</td></tr>
+    <tr><td><code>lib/documents/get-published.ts</code> 신규</td><td>공개 읽기 라우트</td><td><code>getPublishedDocumentBySlug</code>(익명)</td></tr>
+    <tr><td><code>lib/documents/get.ts</code>/<code>types.ts</code> 수정</td><td>발행 상태</td><td>status/published_at 포함</td></tr>
+    <tr><td><code>lib/render/sanitize.ts</code> 신규</td><td>HTML sanitize</td><td>vitest: script/onerror 제거, 허용 태그 보존</td></tr>
+  </tbody>
+</table>
+
 <h2>1. 배경 &amp; 목표</h2>
 <p>
   현재 위키 앱은 동작하지만 <strong>모든 문서가 소유자 전용</strong>이다 — <code>documents</code>의 RLS가

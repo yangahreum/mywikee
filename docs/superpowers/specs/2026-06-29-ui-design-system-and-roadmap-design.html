@@ -54,6 +54,34 @@
   <span class="tag">Next.js App Router</span><span class="tag">Tailwind + CSS vars</span><span class="tag">Newsreader / JetBrains Mono</span><span class="tag">lucide-react</span><span class="tag">BlockNote</span><span class="tag">Supabase RLS</span>
 </p>
 
+<h2>0. 기능정의 &amp; 작업</h2>
+<h3>기능정의</h3>
+<table>
+  <thead><tr><th>기능</th><th>설명</th></tr></thead>
+  <tbody>
+    <tr><td>디자인 시스템</td><td>Tailwind + CSS 변수 토큰(<code>tokens.css</code>), 폰트 3종(Newsreader/시스템 sans/JetBrains Mono), lucide-react 아이콘, 색·타이포·radius·간격 스케일.</td></tr>
+    <tr><td>S1 · 앱 셸</td><td>3화면 공통 셸: 사이드바(브랜드·New·네비·KNOWLEDGE TREE·User 블록) + 토픽바(Quick find·네비·아바타·Publish) + 콘텐츠. User 메뉴·로그아웃.</td></tr>
+    <tr><td>S2 · 홈 대시보드</td><td><code>/</code> 대시보드(청사진 Frame 1): 탭·Jump back in·Recently edited 테이블·우측 레일. <code>/me</code> 흡수.</td></tr>
+    <tr><td>S3 · 지식 트리 &amp; 네비</td><td>사이드바 폴더 계층 트리, <code>folders</code> 테이블 + <code>documents.folder_id</code>, 문서↔폴더 배치.</td></tr>
+    <tr><td>S4 · 에디터 UI + Publish</td><td>BlockNote에 청사진 헤더·툴바·Share/Publish. Publish 액션·RLS·<code>/p</code> 골격 구현(2026-06-29 확정).</td></tr>
+    <tr><td>S5 · 읽기 뷰</td><td><code>/p/[slug]</code>: 브레드크럼·TOC(스크롤 스파이)·Related·figure·코드·콜아웃·태그·저자·푸터. sanitize 렌더.</td></tr>
+    <tr><td>S6 · 검색 + 태그</td><td>Quick find ⌘K 커맨드 팔레트, 태그 칩·필터, 태그별 목록. <code>tags</code> 테이블.</td></tr>
+  </tbody>
+</table>
+<h3>작업</h3>
+<table>
+  <thead><tr><th>작업</th><th>대응 기능</th><th>비고</th></tr></thead>
+  <tbody>
+    <tr><td>S1: Tailwind+토큰 도입, 폰트 교체, lucide-react, <code>AppShell</code></td><td>디자인 시스템, S1 앱 셸</td><td>토대. 기존 화면을 셸에 래핑</td></tr>
+    <tr><td>S2: 홈 대시보드 + documents 조회 확장</td><td>S2 홈 대시보드</td><td>목록·최근·정렬, <code>/me</code> 흡수</td></tr>
+    <tr><td>S3: <code>folders</code> 신규 + <code>folder_id</code>/<code>is_favorite</code>/<code>is_archived</code> + 트리 UI</td><td>S3 지식 트리</td><td>—</td></tr>
+    <tr><td>S4: 에디터 헤더/툴바 + <code>setDocumentPublished</code>·RLS·<code>/p</code> 골격</td><td>S4 에디터 UI + Publish</td><td>Publish 스펙 §6 "툴바 챙은 S4"</td></tr>
+    <tr><td>S5: <code>/p/[slug]</code> 읽기 뷰 + sanitize + TOC + reading_time</td><td>S5 읽기 뷰</td><td>Publish 스펙 §7 "읽기뷰·TOC는 S5"</td></tr>
+    <tr><td>S6: ⌘K 팔레트 + <code>tags</code> 신규 + <code>documents.tags</code> 연결</td><td>S6 검색 + 태그</td><td>—</td></tr>
+    <tr><td>각 슬라이스 vitest + 회귀 동반</td><td>전체</td><td>완료 조건: <code>pnpm tsc --noEmit</code> + <code>pnpm test</code></td></tr>
+  </tbody>
+</table>
+
 <h2>1. 배경 &amp; 목표</h2>
 <p>
   현재 위키 앱은 동작한다 — 매직링크 로그인, 사용자별 문서 소유(멀티테넌트), BlockNote 에디터, source export, Publish(별도 스펙)까지. 그러나 <strong>UI는 디자인 시스템이 없다</strong>: 컴포넌트마다 인라인 <code>style</code>, 전역 스타일·토큰·공통 셸 부재, 폰트는 Pretendard 하나. 이번 작업의 목표는 제공된 청사진을 출발점으로 <strong>전체 UI/디자인 시스템을 처음 세우고</strong>, 청사진이 그리는 위키 워크스페이스를 코어 기능 우선으로 단계 구현하는 것이다.

@@ -53,6 +53,34 @@
   <span class="tag">청사진 Frame 1</span><span class="tag">AppShell(S1)</span><span class="tag">실데이터+placeholder</span><span class="tag">vitest</span>
 </p>
 
+<h2>0. 기능정의 &amp; 작업</h2>
+<h3>기능정의</h3>
+<table>
+  <thead><tr><th>기능</th><th>설명</th></tr></thead>
+  <tbody>
+    <tr><td>홈 라우팅(<code>/me</code> → <code>/</code>)</td><td><code>/</code> 자체를 홈 대시보드(서버, getUser 가드). <code>/me</code>는 <code>/</code>로 리다이렉트(호환).</td></tr>
+    <tr><td>페이지 헤더</td><td>h1 "Home" + 메타("Your knowledge workspace · N pages") + <code>+ New Page</code> 버튼(문서 생성).</td></tr>
+    <tr><td>탭</td><td>Recently edited(활성) · Starred · Created by me · All pages. S2는 Recently edited만 동작, 나머지 자리.</td></tr>
+    <tr><td>Jump back in 카드(실데이터)</td><td>최근 수정 문서 상위 4건 4열 카드(타일+제목+메타). 4건 미만/0건 처리.</td></tr>
+    <tr><td>Recently edited 테이블(실데이터)</td><td>NAME/TAG/UPDATED 카드 테이블. 제목·브레드크럼·태그칩·상대시각·아바타. 빈 상태 행.</td></tr>
+    <tr><td>우측 레일(3패널)</td><td>Starred(빈 상태) · Recent activity(최근 수정 파생) · Quick access(백로그 비활성).</td></tr>
+    <tr><td>푸터 + 상대시각 포맷</td><td>카피라이트 + 링크 placeholder. "2h ago" 류 상대시각 순수 함수.</td></tr>
+  </tbody>
+</table>
+<h3>작업</h3>
+<table>
+  <thead><tr><th>작업</th><th>대응 기능</th><th>비고</th></tr></thead>
+  <tbody>
+    <tr><td><code>app/page.tsx</code> 수정 · <code>app/me/page.tsx</code> redirect</td><td>홈 라우팅</td><td>redirect 제거 → 대시보드, getUser 가드</td></tr>
+    <tr><td><code>lib/home/get-dashboard.ts</code> 신규</td><td>Jump back in, Recently edited, 카운트</td><td>카운트 + 최근 N건 조회(owner)</td></tr>
+    <tr><td><code>lib/format/relative-time.ts</code> 신규(+테스트)</td><td>상대시각 포맷</td><td>순수 함수 TDD</td></tr>
+    <tr><td><code>components/home/PageHeader.tsx</code> · <code>HomeTabs.tsx</code></td><td>페이지 헤더, 탭</td><td>—</td></tr>
+    <tr><td><code>components/home/JumpBackIn.tsx</code> · <code>RecentlyEditedTable.tsx</code></td><td>Jump back in, Recently edited 테이블</td><td>빈 상태·태그칩 포함</td></tr>
+    <tr><td><code>components/home/rail/{Starred,RecentActivity,QuickAccess}.tsx</code></td><td>우측 레일</td><td>비활성/빈 상태/파생</td></tr>
+    <tr><td><code>components/home/Footer.tsx</code> + <code>__tests__/*</code></td><td>푸터, 렌더 검증</td><td>렌더·빈상태·활성탭 테스트</td></tr>
+  </tbody>
+</table>
+
 <h2>1. 배경 &amp; 범위</h2>
 <p>
   S1에서 공통 셸(<code>AppShell</code>)과 디자인 토큰이 섰다. S2는 셸 <strong>안의 콘텐츠</strong>를 청사진 Frame 1으로 채운다. 현재 <code>/me</code>의 "내 문서" 단순 목록을 대체한다.
