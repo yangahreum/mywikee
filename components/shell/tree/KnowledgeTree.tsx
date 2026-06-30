@@ -1,12 +1,15 @@
 "use client";
-import { PlusSquare } from "lucide-react";
+import { useState } from "react";
+import { PlusSquare, Folder, FileText } from "lucide-react";
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   useSensor,
   useSensors,
   useDroppable,
   type DragEndEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 import type { TreeNode, FolderRow } from "@/lib/tree/types";
 import { canDropFolder } from "@/lib/tree/depth";
@@ -47,13 +50,21 @@ function RootDropZone({ children }: { children: React.ReactNode }) {
 export function KnowledgeTree({ nodes }: { nodes: TreeNode[] }) {
   const refresh = useTreeRefresh();
   const folders = flattenFolders(nodes);
+  // 드래그 중 커서를 따라다닐 오버레이용 라벨(드래그 시작~끝).
+  const [activeLabel, setActiveLabel] = useState<{ kind: "folder" | "doc"; label: string } | null>(null);
 
   // 클릭과 드래그 구분: 4px 이동해야 드래그 시작(폴더 토글/문서 링크 클릭 보존).
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   );
 
+  function handleDragStart(event: DragStartEvent) {
+    const d = event.active.data.current as { kind?: "folder" | "doc"; label?: string } | undefined;
+    if (d?.kind) setActiveLabel({ kind: d.kind, label: d.label ?? "" });
+  }
+
   async function handleDragEnd(event: DragEndEvent) {
+    setActiveLabel(null); // 드롭 순간 오버레이 제거
     const { active, over } = event;
     if (!over) return;
 
@@ -96,12 +107,29 @@ export function KnowledgeTree({ nodes }: { nodes: TreeNode[] }) {
       {nodes.length === 0 ? (
         <p className="px-1.5 text-[12px] text-ink-faint">폴더가 없습니다. + 로 만들기.</p>
       ) : (
-        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={() => setActiveLabel(null)}
+        >
           <RootDropZone>
             {nodes.map((n) => (
               <TreeNodeRow key={n.id} node={n} depth={0} folders={folders} />
             ))}
           </RootDropZone>
+          <DragOverlay>
+            {activeLabel ? (
+              <div className="flex items-center gap-2 rounded-md border border-border bg-surface px-3 py-1.5 text-[13px] text-ink shadow-card">
+                {activeLabel.kind === "folder" ? (
+                  <Folder size={15} strokeWidth={1.7} />
+                ) : (
+                  <FileText size={14} strokeWidth={1.7} />
+                )}
+                {activeLabel.label || "제목 없는 문서"}
+              </div>
+            ) : null}
+          </DragOverlay>
         </DndContext>
       )}
     </div>

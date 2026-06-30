@@ -23,8 +23,11 @@ export function TreeNodeRow({
   const refresh = useTreeRefresh();
   const pad = 8 + depth * 14; // 들여쓰기
 
-  // 드래그 핸들: doc/folder 공통. id=node id, data로 kind 전달.
-  const draggable = useDraggable({ id: node.id, data: { kind: node.kind } });
+  // 드래그 핸들: doc/folder 공통. id=node id, data로 kind + 라벨 전달(DragOverlay 표시용).
+  const draggable = useDraggable({
+    id: node.id,
+    data: { kind: node.kind, label: node.kind === "doc" ? node.title : node.name },
+  });
   // 폴더는 droppable. id=folder id.
   const droppable = useDroppable({
     id: node.kind === "folder" ? node.id : `__doc_${node.id}`,
@@ -40,7 +43,7 @@ export function TreeNodeRow({
         {...draggable.listeners}
         href={`/edit/${node.id}`}
         style={{ paddingLeft: pad + 21 }}
-        className="flex h-[31px] items-center gap-2 rounded-md pr-3 text-[13px] text-ink-secondary hover:bg-chip"
+        className={`flex h-[31px] items-center gap-2 rounded-md pr-3 text-[13px] text-ink-secondary hover:bg-chip ${draggable.isDragging ? "opacity-40" : ""}`}
       >
         <FileText size={14} strokeWidth={1.7} /> {node.title || "제목 없는 문서"}
       </Link>
@@ -67,7 +70,7 @@ export function TreeNodeRow({
           {...draggable.listeners}
           onClick={() => setOpen((v) => !v)}
           style={{ paddingLeft: pad }}
-          className={`flex h-8 flex-1 items-center gap-2 rounded-md pr-1 text-[13px] font-medium hover:bg-chip ${open ? "text-ink" : "text-ink-secondary"}`}
+          className={`flex h-8 flex-1 items-center gap-2 rounded-md pr-1 text-[13px] font-medium hover:bg-chip ${open ? "text-ink" : "text-ink-secondary"} ${draggable.isDragging ? "opacity-40" : ""}`}
         >
           {open ? <ChevronDown size={15} strokeWidth={2} /> : <ChevronRight size={15} strokeWidth={2} />}
           <Folder size={15} strokeWidth={1.7} /> {node.name}
