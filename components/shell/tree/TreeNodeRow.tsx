@@ -54,7 +54,7 @@ export function TreeNodeRow({
           ref={draggable.setNodeRef}
           {...draggable.attributes}
           {...draggable.listeners}
-          href={`/edit/${node.id}`}
+          href={`/p/${node.slug}`}
           style={{ paddingLeft: pad + 21 }}
           className={`flex h-[31px] flex-1 items-center gap-2 rounded-md pr-1 text-[13px] text-ink-secondary ${draggable.isDragging ? "opacity-40" : ""}`}
         >

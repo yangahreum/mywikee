@@ -17,6 +17,12 @@ describe("RecentlyEditedTable", () => {
     expect(screen.getByText("PROJECTS")).toBeTruthy(); // 태그칩 = project 대문자
     expect(screen.getByText("2h ago")).toBeTruthy();
   });
+  // 스펙(S5-9 변경): 행 클릭은 읽기 뷰(/p/{slug})로 향한다.
+  it("행 Link href 가 읽기 뷰(/p/slug)로 향한다", () => {
+    render(<RecentlyEditedTable docs={docs} now={NOW} />);
+    const link = screen.getByText("Systems Architecture").closest("a");
+    expect(link?.getAttribute("href")).toBe("/p/systems-architecture");
+  });
   // 스펙: 문서 0건이면 빈 상태 메시지
   it("빈 상태 메시지", () => {
     render(<RecentlyEditedTable docs={[]} now={NOW} />);

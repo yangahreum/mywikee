@@ -16,6 +16,12 @@ describe("JumpBackIn", () => {
     expect(screen.getByText("Systems Architecture")).toBeTruthy();
     expect(screen.getByText(/Projects · Edited 2h ago/)).toBeTruthy();
   });
+  // 스펙(S5-9 변경): 카드 클릭은 읽기 뷰(/p/{slug})로 향한다.
+  it("카드 Link href 가 읽기 뷰(/p/slug)로 향한다", () => {
+    render(<JumpBackIn docs={docs} now={NOW} />);
+    const link = screen.getByText("Systems Architecture").closest("a");
+    expect(link?.getAttribute("href")).toBe("/p/systems-architecture");
+  });
   // 스펙: 문서 0건이면 섹션을 렌더하지 않는다(null)
   it("문서가 없으면 아무것도 렌더하지 않는다", () => {
     const { container } = render(<JumpBackIn docs={[]} now={NOW} />);

@@ -24,7 +24,7 @@ export function RecentlyEditedTable({ docs, now }: Props) {
         docs.map((d, i) => (
           <Link
             key={d.id}
-            href={`/edit/${d.id}`}
+            href={`/p/${d.slug}`}
             className={`${COLS} items-center px-[18px] py-[13px] ${i < docs.length - 1 ? "border-b border-border-2" : ""}`}
           >
             <div className="flex min-w-0 items-center gap-[11px]">

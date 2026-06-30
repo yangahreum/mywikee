@@ -16,7 +16,7 @@ export function JumpBackIn({ docs, now }: Props) {
         {docs.slice(0, 4).map((d) => (
           <Link
             key={d.id}
-            href={`/edit/${d.id}`}
+            href={`/p/${d.slug}`}
             className="rounded-[10px] border border-border bg-surface px-4 pb-4 pt-[15px]"
           >
             <div className="mb-6 flex h-8 w-8 items-center justify-center rounded-lg bg-chip-2 text-ink-secondary">

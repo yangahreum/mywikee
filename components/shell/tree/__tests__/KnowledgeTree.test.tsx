@@ -33,11 +33,11 @@ describe("KnowledgeTree", () => {
     render(<KnowledgeTree nodes={nodes} />);
     expect(screen.getByLabelText("Projects 폴더 삭제")).toBeTruthy();
   });
-  // 스펙: 문서 행에 삭제 트리거가 렌더된다. Link(href) 는 유지되어 네비게이션 불변.
-  it("문서 행에 삭제 버튼이 렌더되고 Link href 가 유지된다", () => {
+  // 스펙(S5-9 변경): 문서 행 삭제 버튼은 유지하되, Link href 는 읽기 뷰(/p/{slug})로 향한다.
+  it("문서 행에 삭제 버튼이 렌더되고 Link href 가 읽기 뷰(/p/slug)로 향한다", () => {
     render(<KnowledgeTree nodes={nodes} />);
     expect(screen.getByLabelText("Root Doc 문서 삭제")).toBeTruthy();
     const link = screen.getByText("Root Doc").closest("a");
-    expect(link?.getAttribute("href")).toBe("/edit/d2");
+    expect(link?.getAttribute("href")).toBe("/p/root-doc");
   });
 });
