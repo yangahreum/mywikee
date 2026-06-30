@@ -119,6 +119,18 @@
   <li><strong>기능표 대조</strong>: 스펙 최상단 기능정의 표·작업목록과 구현을 대조해 누락 없는지 확인(CLAUDE.md §3).</li>
   <li><strong>환경 의존 분리</strong>: 실제 DB/인증 왕복은 환경(마이그레이션·세션) 의존이라, 미적용 시 "미검증"으로 분리 표기하고 통과로 적지 않는다.</li>
 </ul>
+<div class="callout warn">
+  <strong>검증 계층 — 단위 테스트의 한계와 보완.</strong> 단위 테스트(vitest + testing-library)는 <strong>CSR(클라이언트 렌더)만</strong> 하므로, <strong>hydration mismatch·런타임 에러</strong>(서버↔클라 렌더 차이)를 구조적으로 못 잡는다. <code>tsc</code>/<code>build</code>도 런타임이 아니라 못 잡는다. 이를 두 가지로 보완한다:
+</div>
+<table>
+  <thead><tr><th>계층</th><th>무엇을 잡나</th><th>언제</th></tr></thead>
+  <tbody>
+    <tr><td>단위 (vitest)</td><td>로직·렌더 구조·회귀 (CSR)</td><td>매번 (빠름, ~1초)</td></tr>
+    <tr><td>정적 리뷰 (code-reviewer)</td><td><strong>SSR/CSR 경계</strong> — 브라우저 전용 라이브러리(<code>@dnd-kit</code> 등)·비결정적 값(<code>Date.now</code>/내부 카운터 ID)이 SSR되는지. 클라 전용은 <code>dynamic(ssr:false)</code>/mounted 가드인지</td><td>매 슬라이스 리뷰</td></tr>
+    <tr><td><strong>e2e 스모크 (Playwright)</strong></td><td>실제 브라우저 로드 → <strong>콘솔 에러/경고 0 단언</strong>으로 hydration·런타임 에러 캡처. 세션 주입(<code>storageState</code>)으로 인증 후 페이지(<code>/</code>, <code>/edit</code>, <code>/p</code>)도 검증</td><td><strong>슬라이스 완료 시 1회</strong> (매번 X — 무거움, ~30초~1분)</td></tr>
+  </tbody>
+</table>
+<p>즉 단위 테스트는 매번 빠르게, e2e는 슬라이스 완료 시점에만 한 번 — 개발 주기를 거의 늦추지 않으면서 단위 테스트가 못 보는 런타임 영역(이번 트리 hydration 같은)을 자동으로 잡는다.</p>
 
 <h3><span class="step">⑤</span> dev 확인 — 사용자</h3>
 <ul>
