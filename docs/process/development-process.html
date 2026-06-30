@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>wiki 개발 프로세스</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root {
+    --text:#111315; --text-muted:#5a6066; --text-faint:#9098a0;
+    --surface:#fff; --surface-subtle:#f6f7f8; --border:#e3e6ea; --border-strong:#c9ced4;
+    --accent:#1f5d4f; --accent-soft:#e6efeb; --warn:#8a5a00; --warn-soft:#fbf3e2;
+    --radius-sm:4px; --radius-md:8px;
+    --font-sans:'Pretendard',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+    --font-mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+    --measure:84ch;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--surface);color:var(--text);font-family:var(--font-sans);font-size:17px;line-height:1.78;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  main{max-width:var(--measure);margin:0 auto;padding:72px 28px 160px}
+  h1,h2,h3{font-weight:700;letter-spacing:-0.01em;color:var(--text);line-height:1.3}
+  h1{font-size:34px;margin:0 0 6px}
+  h2{font-size:24px;margin:52px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  h3{font-size:18px;margin:28px 0 8px}
+  p,li{color:var(--text)}
+  a{color:var(--accent)}
+  .meta{color:var(--text-faint);font-size:14px;margin:0 0 8px;font-family:var(--font-mono)}
+  .lede{color:var(--text-muted);font-size:18px;margin:14px 0 8px}
+  code{font-family:var(--font-mono);font-size:.86em;background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1px 5px}
+  pre{background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;overflow-x:auto;line-height:1.55}
+  pre code{background:none;border:none;padding:0;font-size:14px}
+  table{border-collapse:collapse;width:100%;margin:18px 0;font-size:15px}
+  th,td{border:1px solid var(--border);padding:8px 12px;text-align:left;vertical-align:top}
+  th{background:var(--surface-subtle);font-weight:600}
+  .callout{margin:20px 0;padding:14px 18px;background:var(--accent-soft);border:1px solid #cfe0d9;border-radius:var(--radius-md)}
+  .callout.warn{background:var(--warn-soft);border-color:#ecd9ad}
+  .callout strong{color:var(--accent)}
+  .callout.warn strong{color:var(--warn)}
+  .tag{display:inline-block;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);background:var(--surface-subtle);border:1px solid var(--border);border-radius:999px;padding:2px 10px;margin:0 6px 6px 0}
+  hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+  .ascii{font-family:var(--font-mono);font-size:12.5px;line-height:1.5;white-space:pre;background:var(--surface-subtle);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;overflow-x:auto}
+  .step{font-family:var(--font-mono);font-size:13px;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+
+<p class="meta">created: 2026-06-30 · project: wiki · type: process</p>
+<h1>wiki 개발 프로세스</h1>
+<p class="lede">이 프로젝트가 한 기능(슬라이스)을 만드는 방식. <strong>설계 → 계획 → 팀 구현 → 검증 → dev 확인</strong>의 생성-검증 루프다. CLAUDE.md가 규칙(정책)이라면, 이 문서는 그 규칙이 실제로 어떻게 돌아가는지 — 흐름·역할·산출물을 한눈에 본다.</p>
+
+<p>
+  <span class="tag">spec→plan→build</span><span class="tag">implementer·reviewer·qa</span><span class="tag">TDD</span><span class="tag">기능표 대조</span><span class="tag">청사진 충실</span>
+</p>
+
+<h2>1. 전체 흐름</h2>
+<div class="ascii">  요구 / 청사진
+       │
+       ▼
+ ┌───────────┐   리뷰 게이트
+ │ ① 설계(스펙) │ ───────────► 사용자 승인
+ └───────────┘
+       │
+       ▼
+ ┌───────────┐
+ │ ② 계획(plan)│  TDD Task 분할
+ └───────────┘
+       │
+       ▼
+ ┌──────────────────────────────────┐
+ │ ③ 구현 루프 (에이전트 팀)            │
+ │   implementer ─► reviewer ─► qa   │  ◄─ CHANGES_REQUESTED 시 수정 후 재확인
+ │        (TDD)     (정적)    (실행)  │
+ └──────────────────────────────────┘
+       │  체크포인트 보고
+       ▼
+ ┌───────────┐
+ │ ④ 검증     │  tsc + test + 회귀 + 기능표 대조
+ └───────────┘
+       │
+       ▼
+ ┌───────────┐   피드백 루프
+ │ ⑤ dev 확인 │ ───────────► 폴리시·버그픽스(메인 직접) / 신규 기능은 ①로
+ └───────────┘</div>
+
+<h2>2. 단계별</h2>
+
+<h3><span class="step">①</span> 설계 — 스펙 (메인 작성)</h3>
+<ul>
+  <li><strong>brainstorming</strong>으로 요구·범위를 정렬한다. 작게 시작하고, 미루는 항목은 후속 슬라이스로 명시한다.</li>
+  <li><strong>HTML 스펙</strong>을 <code>docs/superpowers/specs/</code>에 작성한다. 최상단에 <strong>기능정의 표</strong>와 그에 매칭되는 <strong>작업 표</strong>를 두고(CLAUDE.md §2), 본문에 데이터 모델·UI 픽셀·테스트 범위를 정리한다.</li>
+  <li>UI는 <strong>청사진(Digital Sanctuary)과 최대한 동일</strong>하게 — 색·폰트·간격·radius를 그대로 옮긴다.</li>
+  <li>커밋하고 <strong>풀패스로 공유</strong> → <strong>사용자 리뷰 게이트</strong>. 승인 후에만 다음으로 간다.</li>
+</ul>
+
+<h3><span class="step">②</span> 계획 — plan (메인 작성)</h3>
+<ul>
+  <li>스펙을 <code>docs/superpowers/plans/</code>의 <strong>TDD Task 분할</strong> 계획서로 옮긴다.</li>
+  <li>각 Task = <strong>실패 테스트 → 최소 구현 → 통과 → 커밋</strong> 단위. 작업 표 항목과 Task를 매핑한다.</li>
+  <li>각 Task에 정확한 파일 경로·코드·검증 명령·커밋 메시지를 적는다(zero-context 엔지니어 가정).</li>
+</ul>
+
+<h3><span class="step">③</span> 구현 루프 — 에이전트 팀 (<code>nextjs-build-orchestrator</code> 조율)</h3>
+<ul>
+  <li>연관 Task를 묶어 <strong>implementer</strong>에 위임한다 — TDD, 청사진 픽셀 충실, 계획 명시 파일만 커밋.</li>
+  <li>묶음 단위로 <strong>code-reviewer</strong> 정적 리뷰 — 계획 준수·보안(getUser/RLS/zod)·타입 일관성·테스트 품질·<strong>기능표 대조</strong>(스펙의 기능/작업이 누락 없이 구현됐는지).</li>
+  <li><strong>qa-verifier</strong> 실행 검증 — <code>tsc</code>/<code>test</code>/<code>build</code> + 경계면 교차(조회→소비 shape) + 회귀.</li>
+  <li>리뷰가 <code>CHANGES_REQUESTED</code>면 implementer가 지적만 수정 → 재확인. 깨끗이 끝나면 <strong>체크포인트 1줄 보고</strong> 후 다음.</li>
+</ul>
+<div class="callout">
+  <strong>왜 셋을 분리하나.</strong> 구현자·검토자·검증자를 나누면 "자기 코드를 자기가 통과시키는" 편향이 차단된다. 정적 결함(리뷰)과 실행 결함(QA)은 다른 시각에서 잡힌다.
+</div>
+
+<h3><span class="step">④</span> 검증 원칙</h3>
+<ul>
+  <li>매 슬라이스 <code>pnpm tsc --noEmit</code> + <code>pnpm test</code> 통과(완료 게이트).</li>
+  <li><strong>회귀 동반</strong>: 이전 테스트를 함께 돌려 영향 확인. 신규 구현이 기존 테스트를 깨면 <strong>테스트가 아니라 신규 코드를 수정</strong>한다. 단 요구사항(스펙)이 바뀐 경우의 테스트 갱신은 "의도된 변경"으로 구분한다.</li>
+  <li><strong>기능표 대조</strong>: 스펙 최상단 기능정의 표·작업목록과 구현을 대조해 누락 없는지 확인(CLAUDE.md §3).</li>
+  <li><strong>환경 의존 분리</strong>: 실제 DB/인증 왕복은 환경(마이그레이션·세션) 의존이라, 미적용 시 "미검증"으로 분리 표기하고 통과로 적지 않는다.</li>
+</ul>
+
+<h3><span class="step">⑤</span> dev 확인 — 사용자</h3>
+<ul>
+  <li>사용자가 <code>pnpm dev</code>로 직접 확인하고 피드백한다.</li>
+  <li>작은 시각 폴리시·버그픽스(예: 배경색, 커서, 누락 요소)는 <strong>메인이 직접</strong> 수정·검증·커밋한다.</li>
+  <li>새 기능 요구는 다시 <strong>①설계</strong>부터.</li>
+  <li>외부 DB 스키마 변경은 <strong>사용자가 수동 적용</strong>(마이그레이션 SQL 안내).</li>
+</ul>
+
+<h2>3. 역할</h2>
+<table>
+  <thead><tr><th>주체</th><th>책임</th><th>안 하는 것</th></tr></thead>
+  <tbody>
+    <tr><td><strong>메인 (리더)</strong></td><td>의도·설계(스펙)·계획·팀 조율·리뷰 종합·직접 폴리시·메모리</td><td>(필요 시 직접 구현하나 기능 구현은 위임)</td></tr>
+    <tr><td><code>nextjs-implementer</code></td><td>단일/묶음 Task를 TDD로 구현·커밋</td><td>리뷰/판정</td></tr>
+    <tr><td><code>code-reviewer</code></td><td>diff 정적 리뷰·PASS/CHANGES_REQUESTED 판정</td><td>코드 수정·실행</td></tr>
+    <tr><td><code>qa-verifier</code></td><td>실행 검증(tsc/test/build)·회귀·경계면</td><td>코드 수정·커밋</td></tr>
+  </tbody>
+</table>
+<p>모든 에이전트는 <code>model: opus</code>. 에이전트·스킬 정의는 <code>.claude/agents/</code>, <code>.claude/skills/</code>. 이 팀은 <code>harness</code> 메타 스킬로 생성되었고, 다른 스택이 필요하면 범용화하지 않고 harness로 그 프로젝트용 팀을 새로 만든다.</p>
+
+<h2>4. 공통 규약</h2>
+<ul>
+  <li><strong>git</strong>: <code>master</code> 직접 커밋, <strong>명시 파일만 <code>git add</code></strong>(공유 모노레포 — <code>git add -A</code> 금지). 커밋 끝에 <code>Co-Authored-By</code>.</li>
+  <li><strong>언어</strong>: 모든 답변·문서는 한글.</li>
+  <li><strong>문서 공유</strong>: 스펙·계획은 풀 로컬 패스로 링크.</li>
+  <li><strong>메모리</strong>: 결정·피드백을 <code>~/.claude/.../memory/</code>에 기록(다음 세션 연속성).</li>
+  <li><strong>중간 산출물</strong>: 크면 <code>_workspace/</code>에 보존(감사 추적). 최종은 계획 명시 파일만 커밋.</li>
+</ul>
+
+<h2>5. 산출물 위치</h2>
+<table>
+  <thead><tr><th>산출물</th><th>위치</th></tr></thead>
+  <tbody>
+    <tr><td>설계 스펙 (HTML)</td><td><code>docs/superpowers/specs/YYYY-MM-DD-&lt;topic&gt;-design.html</code></td></tr>
+    <tr><td>구현 계획 (md)</td><td><code>docs/superpowers/plans/YYYY-MM-DD-&lt;feature&gt;.md</code></td></tr>
+    <tr><td>이 프로세스 문서</td><td><code>docs/process/development-process.html</code></td></tr>
+    <tr><td>외부 wiki 미러 (lazy)</td><td><code>/Users/areumyang/AI/wiki/wiki/</code> (사용자 명시 요청 시 동기화)</td></tr>
+    <tr><td>에이전트 / 스킬</td><td><code>.claude/agents/</code>, <code>.claude/skills/</code> (전역 복사본 <code>~/.claude/</code>)</td></tr>
+  </tbody>
+</table>
+
+<h2>6. 한 슬라이스의 생애 (예: S5 읽기 뷰)</h2>
+<div class="ascii">사용자: "트리에서 파일 클릭하면 바로 편집되는 게 이상한데"
+  → 메인: 보기/편집 흐름 문제 진단 → S5 읽기뷰가 해법
+  → ① 스펙 작성(청사진 Frame 2 + 흐름) → 커밋 → 공유
+  → ② 계획서(9 Task: sanitize/toc/Article/TocNav/라우트/라우팅 변경)
+  → ③ implementer 묶음(1~4 lib → 5~7 컴포넌트 → 8~9 통합)
+       각 묶음 후 reviewer, 마지막 qa
+  → ④ tsc/test(76)/build 통과, 경계면 정합, 기능표 대조
+  → ⑤ 사용자 dev 확인 → 폴리시/다음 슬라이스</div>
+
+<hr />
+<p class="meta">이 문서는 프로세스가 진화하면 갱신한다. 규칙의 단일 출처는 CLAUDE.md.</p>
+</main>
+</body>
+</html>
