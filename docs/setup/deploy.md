@@ -11,7 +11,8 @@ mywikee를 GitHub Actions(테스트 게이트) → Vercel(prod)로 배포하기 
 1. https://vercel.com → **New Project**
 2. GitHub의 **`yangahreum/mywikee`** repo import
 3. Framework: **Next.js** 자동 감지 (Root Directory는 그대로 — mywikee 루트가 곧 앱)
-4. (첫 import 시 Vercel이 자동 빌드를 시도할 수 있음 — env 등록 후 재배포하면 됨)
+4. ⚠️ **Vercel 자동 빌드 끄기 (B방식 핵심)**: Settings → **Git** → **"Ignored Build Step"**에 `exit 0` 입력.
+   - 우리는 GitHub Actions가 테스트 통과 후 `vercel deploy`로 배포한다. Vercel이 push마다 **자체로도 배포하면 중복**되므로, Vercel의 자동 빌드를 꺼서 배포를 Actions에만 맡긴다.
 
 ### ② Vercel 환경 변수 (Supabase 연결)
 프로젝트 **Settings → Environment Variables** (Production)에 등록:
